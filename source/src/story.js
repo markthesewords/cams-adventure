@@ -653,9 +653,9 @@ async function pickOuting(){
   const c=await choose(S.flags.outings?'Want to go on another adventure?':'Alright Cam, what should we do now?',names,'Mom');
   if(c===3){ setGoal('Talk to Mom to pick an adventure.',['npc:grace']); NPC.grace.node=null; ambient(NPC.grace); return; }
   claim(NPC.nick);
-  if(c===0){ await walkOuting(); S.flags.outings=(S.flags.outings||0)+1; save(); await backHome(); return; }
-  if(c===1){ await cubOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didCub=true; save(); await backHome(); return; }
-  if(c===2){ await parkOuting(); S.flags.outings=(S.flags.outings||0)+1; save(); await backHome(); return; }
+  if(c===0){ await walkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='walk'; save('home'); await backHome(); return; }
+  if(c===1){ await cubOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didCub=true; S.flags.lastOut='cub'; save('home'); await backHome(); return; }
+  if(c===2){ await parkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='park'; save('home'); await backHome(); return; }
   await fadeTo(1,600); S.fadeText=names[c]; S.fadeSub='This adventure isn\'t built yet.'; await wait(2200); S.fadeText=null; S.fadeSub=null; await fadeTo(0,600);
   setGoal('Talk to Mom to pick an adventure.',['npc:grace']);
 }
@@ -775,12 +775,15 @@ async function arcade(){ let played=false; S.cut=true; P.sheet=camSheet(); for(c
     await arcPlay(id);
     S.mini=null; S.fadeText=null; S.fadeSub=null; S.goal=''; S.targets=[]; }
   S.cut=false; return played; }
+// save points inside a chapter, and what the title screen calls them
+const SAVE_PT={ home:f=>'back from '+({walk:'the walk',cub:'Cub Foods',park:'the park'}[f.lastOut]||'the outing'), lunch:f=>'lunch', daddy:f=>'after lunch',
+  bs:f=>{ const n=Object.keys(f.bs||{}).filter(k=>f.bs[k]).length; return n>=3?'the drums':'the basement ('+n+' of 3 toys)'; }, yard:f=>'the backyard' };
 async function boot(){
   let HASH=location.hash; try{ const w=sessionStorage.getItem('cam_warp'); if(w){ sessionStorage.removeItem('cam_warp'); HASH='#'+w; } }catch(e){}
   if(HASH==='#dev'){ try{ localStorage.setItem('cam_dev','1'); }catch(e){} }
   const sv=loadSave();
   S.title=true; S.titleScene=false;
-  S.titleSub = sv&&sv.ch>=6 ? 'Saved: Emory is here' : sv&&sv.ch>=5 ? 'Saved: the basement' : sv&&sv.ch>=4 ? 'Saved: 1:30 PM' : sv&&sv.ch>=3 ? 'Saved: 9:30 AM' : sv&&sv.ch>=2 ? 'Saved: 7:00 AM' : '';
+  S.titleSub = sv&&sv.pt&&SAVE_PT[sv.pt] ? 'Saved: '+SAVE_PT[sv.pt](sv.flags||{}) : sv&&sv.ch>=6 ? 'Saved: Emory is here' : sv&&sv.ch>=5 ? 'Saved: the basement' : sv&&sv.ch>=4 ? 'Saved: 1:30 PM' : sv&&sv.ch>=3 ? 'Saved: 9:30 AM' : sv&&sv.ch>=2 ? 'Saved: 7:00 AM' : '';
   await new Promise(r=>S.titleRes=r); S.titleRes=null; audioKick();
   S.title=false;
   if(HASH==='#dev'){ await devMenu(); return; }
@@ -788,13 +791,37 @@ async function boot(){
   if(HASH==='#ch2'||HASH==='#ch3'){ S.inv=[]; S.flags={ch1done:true}; if(HASH==='#ch3'){ S.flags.ch2done=true; S.flags.dj=true; await chapter3(); } else await chapter2(); return; }
   if(!HASH&&!fresh){ while(true){ const n=ARCADE.filter(a=>arcOpen(a.id)).length; const c=await choose('',[sv&&sv.ch>=2?'Play the story':'Start the day','Mini games   '+n+' of '+ARCADE.length].concat(devOn()?['Developer warp']:[])); if(c===0) break; if(c===2){ await devMenu(); return; } const played=await arcade(); if(played){ location.reload(); return; } }
     S.dreamFirst=true; }
-  if(sv&&sv.ch>=2&&!fresh&&!HASH){ const opts=(sv.ch>=6?['Continue (Emory is here)']:[]).concat(sv.ch>=5?['Start in the basement']:[]).concat(sv.ch>=4?['Start at 1:30 PM']:[],sv.ch>=3?['Start at 9:30 AM']:[],['Start at 7:00 AM','New game']);
-    const c=await choose('Start where?',opts); const pick=opts[c];
-    if(pick!=='New game'){ S.inv=sv.inv||[]; S.flags={ch1done:true,outfit:(sv.flags||{}).outfit};
-      if(pick.includes('Emory')){ S.flags.ch2done=true; S.flags.dj=true; S.flags.outings=1; S.flags.pmStage=6; S.flags.bsDone=true; S.cut=true; S.fade=1; await chapter6(); S.cut=false; }
-      else if(pick.includes('basement')){ S.flags.ch2done=true; S.flags.dj=true; S.flags.outings=1; S.flags.pmStage=6; for(const k in NPC) NPC[k].visible=true; S.cut=true; S.fade=1; await chapter5(); S.cut=false; }
-      else if(pick.includes('1:30')){ S.flags.ch2done=true; S.flags.dj=true; S.flags.outings=1; await chapter4(); }
-      else if(pick.includes('9:30')){ S.flags.ch2done=true; S.flags.dj=true; await chapter3(); } else await chapter2(); return; } }
+  if(sv&&sv.ch>=2&&!fresh&&!HASH){ const f=sv.flags||{}, list=[];   // newest first: the exact save point, then every major event and time of day ever reached
+    const h=hiOf(sv);
+    if(sv.pt&&SAVE_PT[sv.pt]) list.push(['Continue: '+SAVE_PT[sv.pt](f),'pt']);
+    if(h.yard) list.push(['The backyard','yard']);
+    if(h.ch>=6) list.push(['Emory is here','ch6']);
+    if(h.drums) list.push(['The drums','drums']);
+    if(h.ch>=5) list.push(['The basement','ch5']);
+    if(h.ch>=5||h.ps>=4) list.push(['After lunch','daddy']);
+    if(h.ch>=5||h.ps>=2) list.push(['Lunch','lunch']);
+    if(h.ch>=4) list.push(['1:30 PM (nap is over)','ch4']);
+    if(h.ch>=4||h.out) list.push(['Home after the outing','home']);
+    if(h.ch>=3) list.push(['9:30 AM','ch3']);
+    list.push(['7:00 AM','ch2'],['New game','new']);
+    const c=await choose('Start where?',list.map(q=>q[0])); let pick=list[c][1];
+    if(pick!=='new'){ S.inv=sv.inv||[]; const exact=pick==='pt'; if(exact) pick=sv.pt;
+      S.flags=exact?Object.assign({},f,{ch1done:true}):{ch1done:true,outfit:f.outfit}; const F=S.flags;
+      if(pick!=='ch2'){ F.ch2done=true; F.dj=true; }
+      if(!['ch2','ch3'].includes(pick)){ F.outings=F.outings||1; F.gotMom=true; if(!S.inv.includes('monkey')) S.inv.push('monkey'); }
+      if(['ch5','bs','drums','ch6','yard'].includes(pick)) F.pmStage=6;
+      if(pick==='ch6'||pick==='yard') F.bsDone=true;
+      if(pick==='yard'){ S.chapter=6; S.clock='4:00 PM'; S.tick=null; S.hud=null; P.sheet=camSheet(); S.cut=true; S.fade=1; await toYard(); if(S.fade>0) await fadeTo(0,500); S.cut=false; }
+      else if(pick==='ch6'){ S.cut=true; S.fade=1; await chapter6(); S.cut=false; }
+      else if(pick==='drums'){ F.bs={guitar:true,cube:true,bed:true}; await bsResume(); }
+      else if(pick==='bs'){ await bsResume(); }
+      else if(pick==='ch5'){ for(const k in NPC) NPC[k].visible=true; S.cut=true; S.fade=1; await chapter5(); S.cut=false; }
+      else if(pick==='daddy') await resumeDaddy();
+      else if(pick==='lunch') await resumeLunch();
+      else if(pick==='ch4') await chapter4();
+      else if(pick==='home'){ S.chapter=3; S.clock='9:30 AM'; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=true; for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id); doors.cam=true; S.cut=true; S.fade=1; save('home'); await backHome(); S.cut=false; }
+      else if(pick==='ch3') await chapter3(); else await chapter2();
+      return; } }
   if(['#walk','#park','#nap','#pm'].includes(HASH)){ S.chapter=3; S.clock='9:30 AM'; S.flags={gotMom:true,outings:1}; S.inv=['monkey']; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=true; for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id); doors.cam=true; S.cut=true;
     if(HASH==='#walk'){ window._res=await walkOuting(); await backHome(); }
     if(HASH==='#park'){ window._res=await parkOuting(); await backHome(); }

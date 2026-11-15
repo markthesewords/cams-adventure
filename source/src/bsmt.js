@@ -28,7 +28,7 @@ async function chapter5(){
 }
 // one of the three is finished: Vinny after the first, Mom after the second, the drums after the third
 async function bsProgress(k){
-  const n=NPC.nick, g=NPC.grace, v=NPC.vinny; if(S.flags.bs[k]) return; S.flags.bs[k]=true; save(); const done=3-bsLeft().length;
+  const n=NPC.nick, g=NPC.grace, v=NPC.vinny; if(S.flags.bs[k]) return; S.flags.bs[k]=true; save('bs'); const done=3-bsLeft().length;
   if(done===1){ S.goal=''; S.targets=[];
     for(let i=0;i<4;i++){ blip(120+i*10,0.06,0.07,'triangle'); S.shake=0.08; await wait(180); }
     v.visible=true; v.sleep=false; v.lie=false; v.follow=false; v.x=BS.top[0]; v.y=BS.top[1]; v.dir='down';
@@ -42,12 +42,22 @@ async function bsProgress(k){
     bubble(g,'Have fun, boys!',1300); await wait(900); await walk(g,[[240,196],BS.top],52); g.visible=false; nickSit(); }
   if(done<3){ bsGoal(); return; }
   // the drums are ready
-  S.goal=''; S.targets=[]; S.flags.bsReady=true; save();
+  S.goal=''; S.targets=[]; S.flags.bsReady=true; save('bs');
   jingle([523,659,784,1047,1319],0.08,'triangle',0.06); bubble(n,'It\'s ready!',1500); await wait(900);
   await say('Dad','Okay bud, it finally loaded. Come here, let\'s play some drums!');
   bubble(P,'OH OH OH!!!!',1600); await hop(P,2);
   await bsToThrone(); await bsDrumScene();
 }
+// picking the basement back up: the toys already played stay played; with all three done it goes straight to the drums
+async function bsResume(){ const n=NPC.nick, g=NPC.grace, v=NPC.vinny; S.cut=true; claim(n); claim(g);
+  setMap('bsmt'); S.chapter=5; S.clock='2:15 PM'; S.light='day'; S.glows=[]; S.goal=''; S.targets=[]; S.extra=[]; S.bounds=null; S.noCollide=false; S.camFocus=null;
+  S.flags.bs=S.flags.bs||{}; S.flags.bsDone=false; hidden.add('b_sticks'); S.flags.sticks=true; const done=3-bsLeft().length; S.flags.bsReady=done>=3; save('bs');
+  g.visible=false; n.visible=true; n.onCouch=false; nickSit(); P.visible=true; P.sheet=camSheet(); P.sit=0; P.carry=null; P.lift=0; P.zBias=0; P.lying=false; P.seated=false; P.x=BS.kit[0]; P.y=BS.kit[1]; P.dir='left';
+  v.path=null; v.sleep=false; v.lie=false; v.zBias=0; v.visible=done>=1; v.follow=done>=1; v.x=P.x+18; v.y=P.y+8; v.dir='left'; crumbs.length=0;
+  S.tick=bsTick; S.hud=bsHud; BSN.on=false; BSN.noise=0; S.snapCam=true; S.fade=1; await fadeTo(0,700);
+  if(done>=3){ await say('Dad','Okay bud, it finally loaded. Come here, let\'s play some drums!'); await bsToThrone(); await bsDrumScene(); }
+  else bsGoal();
+  S.cut=false; }
 async function bsToThrone(){
   const n=NPC.nick; n.seated=false; S.noCollide=true; await walk(n,[[P.x+12,P.y+1]],74); n.dir='left'; P.carry=n; P.lift=9; P.zBias=3; blip(500,0.06,0.04,'triangle'); await wait(350);
   await walk(n,[[BS.throne[0]+14,BS.throne[1]+4]],54); n.dir='left'; await wait(200);

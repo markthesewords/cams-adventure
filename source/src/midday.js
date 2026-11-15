@@ -48,7 +48,7 @@ async function graceGetsCam(){
   await walk(g,[[tx(5)+8,ty(7)-2]],40); g.dir='left'; await wait(200);
   P.carry=null; P.lift=0; P.zBias=0; S.bounds=null; S.noCollide=false; P.x=g.x-13; P.y=g.y+2; P.dir='right'; blip(300,0.05,0.04,'triangle'); await wait(300);
   await say('Mom','There we go. Let\'s get you some lunch.');
-  S.flags.pmStage=2; setGoal('Go to the kitchen for lunch.',['npc:grace','stool0','stool1']);
+  S.flags.pmStage=2; save('lunch'); setGoal('Go to the kitchen for lunch.',['npc:grace','stool0','stool1']);
   walk(g,[[tx(7),ty(8)],[tx(7),ty(12)+2],[tx(18),ty(12)+2],[tx(25),ty(11)],[tx(26),ty(7)]],46).then(()=>{ g.dir='left'; });
 }
 async function chapter4(){
@@ -67,6 +67,19 @@ async function chapter4(){
   S.flags.pmStage=0; setGoal('Yell for Mommy! ('+(isTouch()?'Press A':'Press Z or Space')+')');
   S.noFall=false; S.cut=false;
 }
+// ---------- picking the afternoon back up at a save point ----------
+function pmSetup(){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny; claim(g); claim(n); S.bathUser=null; doors.bath=true;
+  S.chapter=4; S.light='day'; S.clock='1:30 PM'; S.goal=''; S.glows=[]; S.flags.pmCalls=4;
+  if(S.map!=='house') setMap('house'); tvOn(false); S.vinTok=(S.vinTok||0)+1; hidden.delete('slider'); hidden.add('sliderOpen'); hidden.delete('bsmtdoor');
+  for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id);
+  n.visible=false; n.path=null; n.zBias=0; n.seated=false; g.visible=true; g.path=null; g.zBias=0; g.follow=false; g.seated=false;
+  v.visible=true; v.path=null; v.follow=false; v.ghost=false; [v.x,v.y]=COUCH; v.lie=true; v.sleep=true; v.zBias=8; v.dir='left';
+  P.visible=true; P.sheet=camSheet(); P.carry=null; P.lift=0; P.sit=0; P.zBias=0; P.lying=false; cribFront(false); S.bounds=null; S.noCollide=false; S.noFall=false; doors.cam=true; noise(0,0.3); foodOn(null); S.mini=null; S.tick=null; S.hud=null; }
+async function resumeLunch(){ const g=NPC.grace; S.cut=true; pmSetup(); P.x=tx(5)-5; P.y=ty(7); P.dir='right'; g.x=tx(26); g.y=ty(7); g.dir='left'; S.snapCam=true; S.fade=1;
+  S.flags.pmStage=2; save('lunch'); await fadeTo(0,700); setGoal('Go to the kitchen for lunch.',['npc:grace','stool0','stool1']); S.cut=false; }
+async function resumeDaddy(){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny; S.cut=true; pmSetup(); P.x=tx(26); P.y=ty(19)+2; P.dir='up'; g.x=tx(22); g.y=ty(5)-2; g.dir='right';
+  v.lie=false; v.sleep=false; v.zBias=0; v.x=P.x+20; v.y=P.y+6; v.dir='left'; n.visible=true; n.x=tx(15); n.y=ty(4); n.dir='down'; S.snapCam=true; S.fade=1;
+  S.flags.pmStage=4; save('daddy'); await fadeTo(0,700); setGoal('Go find Daddy.',['npc:nick']); S.cut=false; }
 async function lunch(){
   const g=NPC.grace, o=OBJ.stool0;
   S.flags.pmStage=3; setGoal('');
@@ -117,7 +130,7 @@ async function lunch(){
   await walk(n,[[tx(14),ty(4)+2],[tx(15),ty(4)]],40); n.dir='down'; hidden.delete('bsmtdoor'); blip(200,0.1,0.05,'triangle'); await wait(700);
   S.camFocus=null; await wait(500);
   bubble(P,'Daddy!',1300); await wait(900);
-  S.flags.pmStage=4; setGoal('Go find Daddy.',['npc:nick']);
+  S.flags.pmStage=4; save('daddy'); setGoal('Go find Daddy.',['npc:nick']);
 }
 async function basementDoor(){
   const n=NPC.nick; S.flags.pmStage=5; setGoal(''); face(n,faceTo(n,P));

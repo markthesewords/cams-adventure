@@ -343,7 +343,12 @@ async function walk(e,pts,speed){ e.hold=false; e.path=safePts(e,pts); e.pathSpe
 function face(e,d){ e.dir=d; }
 function setDoor(k,open){ doors[k]=open; blip(open?300:220,0.08,0.06,'triangle'); }
 // ---------------- save ----------------
-function save(){ try{ localStorage.setItem('camAdventure_v2',JSON.stringify({ch:S.chapter,inv:S.inv,flags:S.flags})); }catch(e){} }
+function hiOf(sv){ if(!sv) return {}; if(sv.hi) return sv.hi; const f=sv.flags||{}; return {ch:sv.ch,ps:sv.ch>4?6:sv.ch===4?(f.pmStage||0):0,out:f.outings||0,drums:(sv.ch>=6||f.bsReady)?1:0,yard:f.yard?1:0}; }
+// save(pt): pt names a save point inside the chapter (a major event). A save without one keeps the point only while still in that chapter.
+function save(pt){ if(pt){ S.pt=pt; S.ptCh=S.chapter; } else if(S.ptCh!==S.chapter){ S.pt=null; } const f=S.flags||{}, o=hiOf(loadSave()), M=(a,b)=>Math.max(a||0,b||0);
+  // hi: the furthest the player has ever got, so starting again from an earlier point never removes the later ones from the menu
+  const hi={ch:M(o.ch,S.chapter), ps:S.chapter>=4?M(S.chapter>(o.ch||0)?0:o.ps,S.chapter===4?f.pmStage:6):(o.ps||0), out:M(o.out,f.outings), drums:(o.drums||f.bsReady||S.chapter>=6)?1:0, yard:(o.yard||f.yard)?1:0};
+  try{ localStorage.setItem('camAdventure_v2',JSON.stringify({ch:S.chapter,pt:S.pt||null,inv:S.inv,flags:S.flags,hi})); }catch(e){} }
 function loadSave(){ try{ return JSON.parse(localStorage.getItem('camAdventure_v2')||'null'); }catch(e){ return null; } }
 // ---------------- update ----------------
 let last=performance.now();
@@ -1298,9 +1303,9 @@ async function pickOuting(){
   const c=await choose(S.flags.outings?'Want to go on another adventure?':'Alright Cam, what should we do now?',names,'Mom');
   if(c===3){ setGoal('Talk to Mom to pick an adventure.',['npc:grace']); NPC.grace.node=null; ambient(NPC.grace); return; }
   claim(NPC.nick);
-  if(c===0){ await walkOuting(); S.flags.outings=(S.flags.outings||0)+1; save(); await backHome(); return; }
-  if(c===1){ await cubOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didCub=true; save(); await backHome(); return; }
-  if(c===2){ await parkOuting(); S.flags.outings=(S.flags.outings||0)+1; save(); await backHome(); return; }
+  if(c===0){ await walkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='walk'; save('home'); await backHome(); return; }
+  if(c===1){ await cubOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didCub=true; S.flags.lastOut='cub'; save('home'); await backHome(); return; }
+  if(c===2){ await parkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='park'; save('home'); await backHome(); return; }
   await fadeTo(1,600); S.fadeText=names[c]; S.fadeSub='This adventure isn\'t built yet.'; await wait(2200); S.fadeText=null; S.fadeSub=null; await fadeTo(0,600);
   setGoal('Talk to Mom to pick an adventure.',['npc:grace']);
 }
@@ -1420,12 +1425,15 @@ async function arcade(){ let played=false; S.cut=true; P.sheet=camSheet(); for(c
     await arcPlay(id);
     S.mini=null; S.fadeText=null; S.fadeSub=null; S.goal=''; S.targets=[]; }
   S.cut=false; return played; }
+// save points inside a chapter, and what the title screen calls them
+const SAVE_PT={ home:f=>'back from '+({walk:'the walk',cub:'Cub Foods',park:'the park'}[f.lastOut]||'the outing'), lunch:f=>'lunch', daddy:f=>'after lunch',
+  bs:f=>{ const n=Object.keys(f.bs||{}).filter(k=>f.bs[k]).length; return n>=3?'the drums':'the basement ('+n+' of 3 toys)'; }, yard:f=>'the backyard' };
 async function boot(){
   let HASH=location.hash; try{ const w=sessionStorage.getItem('cam_warp'); if(w){ sessionStorage.removeItem('cam_warp'); HASH='#'+w; } }catch(e){}
   if(HASH==='#dev'){ try{ localStorage.setItem('cam_dev','1'); }catch(e){} }
   const sv=loadSave();
   S.title=true; S.titleScene=false;
-  S.titleSub = sv&&sv.ch>=6 ? 'Saved: Emory is here' : sv&&sv.ch>=5 ? 'Saved: the basement' : sv&&sv.ch>=4 ? 'Saved: 1:30 PM' : sv&&sv.ch>=3 ? 'Saved: 9:30 AM' : sv&&sv.ch>=2 ? 'Saved: 7:00 AM' : '';
+  S.titleSub = sv&&sv.pt&&SAVE_PT[sv.pt] ? 'Saved: '+SAVE_PT[sv.pt](sv.flags||{}) : sv&&sv.ch>=6 ? 'Saved: Emory is here' : sv&&sv.ch>=5 ? 'Saved: the basement' : sv&&sv.ch>=4 ? 'Saved: 1:30 PM' : sv&&sv.ch>=3 ? 'Saved: 9:30 AM' : sv&&sv.ch>=2 ? 'Saved: 7:00 AM' : '';
   await new Promise(r=>S.titleRes=r); S.titleRes=null; audioKick();
   S.title=false;
   if(HASH==='#dev'){ await devMenu(); return; }
@@ -1433,13 +1441,37 @@ async function boot(){
   if(HASH==='#ch2'||HASH==='#ch3'){ S.inv=[]; S.flags={ch1done:true}; if(HASH==='#ch3'){ S.flags.ch2done=true; S.flags.dj=true; await chapter3(); } else await chapter2(); return; }
   if(!HASH&&!fresh){ while(true){ const n=ARCADE.filter(a=>arcOpen(a.id)).length; const c=await choose('',[sv&&sv.ch>=2?'Play the story':'Start the day','Mini games   '+n+' of '+ARCADE.length].concat(devOn()?['Developer warp']:[])); if(c===0) break; if(c===2){ await devMenu(); return; } const played=await arcade(); if(played){ location.reload(); return; } }
     S.dreamFirst=true; }
-  if(sv&&sv.ch>=2&&!fresh&&!HASH){ const opts=(sv.ch>=6?['Continue (Emory is here)']:[]).concat(sv.ch>=5?['Start in the basement']:[]).concat(sv.ch>=4?['Start at 1:30 PM']:[],sv.ch>=3?['Start at 9:30 AM']:[],['Start at 7:00 AM','New game']);
-    const c=await choose('Start where?',opts); const pick=opts[c];
-    if(pick!=='New game'){ S.inv=sv.inv||[]; S.flags={ch1done:true,outfit:(sv.flags||{}).outfit};
-      if(pick.includes('Emory')){ S.flags.ch2done=true; S.flags.dj=true; S.flags.outings=1; S.flags.pmStage=6; S.flags.bsDone=true; S.cut=true; S.fade=1; await chapter6(); S.cut=false; }
-      else if(pick.includes('basement')){ S.flags.ch2done=true; S.flags.dj=true; S.flags.outings=1; S.flags.pmStage=6; for(const k in NPC) NPC[k].visible=true; S.cut=true; S.fade=1; await chapter5(); S.cut=false; }
-      else if(pick.includes('1:30')){ S.flags.ch2done=true; S.flags.dj=true; S.flags.outings=1; await chapter4(); }
-      else if(pick.includes('9:30')){ S.flags.ch2done=true; S.flags.dj=true; await chapter3(); } else await chapter2(); return; } }
+  if(sv&&sv.ch>=2&&!fresh&&!HASH){ const f=sv.flags||{}, list=[];   // newest first: the exact save point, then every major event and time of day ever reached
+    const h=hiOf(sv);
+    if(sv.pt&&SAVE_PT[sv.pt]) list.push(['Continue: '+SAVE_PT[sv.pt](f),'pt']);
+    if(h.yard) list.push(['The backyard','yard']);
+    if(h.ch>=6) list.push(['Emory is here','ch6']);
+    if(h.drums) list.push(['The drums','drums']);
+    if(h.ch>=5) list.push(['The basement','ch5']);
+    if(h.ch>=5||h.ps>=4) list.push(['After lunch','daddy']);
+    if(h.ch>=5||h.ps>=2) list.push(['Lunch','lunch']);
+    if(h.ch>=4) list.push(['1:30 PM (nap is over)','ch4']);
+    if(h.ch>=4||h.out) list.push(['Home after the outing','home']);
+    if(h.ch>=3) list.push(['9:30 AM','ch3']);
+    list.push(['7:00 AM','ch2'],['New game','new']);
+    const c=await choose('Start where?',list.map(q=>q[0])); let pick=list[c][1];
+    if(pick!=='new'){ S.inv=sv.inv||[]; const exact=pick==='pt'; if(exact) pick=sv.pt;
+      S.flags=exact?Object.assign({},f,{ch1done:true}):{ch1done:true,outfit:f.outfit}; const F=S.flags;
+      if(pick!=='ch2'){ F.ch2done=true; F.dj=true; }
+      if(!['ch2','ch3'].includes(pick)){ F.outings=F.outings||1; F.gotMom=true; if(!S.inv.includes('monkey')) S.inv.push('monkey'); }
+      if(['ch5','bs','drums','ch6','yard'].includes(pick)) F.pmStage=6;
+      if(pick==='ch6'||pick==='yard') F.bsDone=true;
+      if(pick==='yard'){ S.chapter=6; S.clock='4:00 PM'; S.tick=null; S.hud=null; P.sheet=camSheet(); S.cut=true; S.fade=1; await toYard(); if(S.fade>0) await fadeTo(0,500); S.cut=false; }
+      else if(pick==='ch6'){ S.cut=true; S.fade=1; await chapter6(); S.cut=false; }
+      else if(pick==='drums'){ F.bs={guitar:true,cube:true,bed:true}; await bsResume(); }
+      else if(pick==='bs'){ await bsResume(); }
+      else if(pick==='ch5'){ for(const k in NPC) NPC[k].visible=true; S.cut=true; S.fade=1; await chapter5(); S.cut=false; }
+      else if(pick==='daddy') await resumeDaddy();
+      else if(pick==='lunch') await resumeLunch();
+      else if(pick==='ch4') await chapter4();
+      else if(pick==='home'){ S.chapter=3; S.clock='9:30 AM'; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=true; for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id); doors.cam=true; S.cut=true; S.fade=1; save('home'); await backHome(); S.cut=false; }
+      else if(pick==='ch3') await chapter3(); else await chapter2();
+      return; } }
   if(['#walk','#park','#nap','#pm'].includes(HASH)){ S.chapter=3; S.clock='9:30 AM'; S.flags={gotMom:true,outings:1}; S.inv=['monkey']; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=true; for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id); doors.cam=true; S.cut=true;
     if(HASH==='#walk'){ window._res=await walkOuting(); await backHome(); }
     if(HASH==='#park'){ window._res=await parkOuting(); await backHome(); }
@@ -2767,7 +2799,7 @@ async function graceGetsCam(){
   await walk(g,[[tx(5)+8,ty(7)-2]],40); g.dir='left'; await wait(200);
   P.carry=null; P.lift=0; P.zBias=0; S.bounds=null; S.noCollide=false; P.x=g.x-13; P.y=g.y+2; P.dir='right'; blip(300,0.05,0.04,'triangle'); await wait(300);
   await say('Mom','There we go. Let\'s get you some lunch.');
-  S.flags.pmStage=2; setGoal('Go to the kitchen for lunch.',['npc:grace','stool0','stool1']);
+  S.flags.pmStage=2; save('lunch'); setGoal('Go to the kitchen for lunch.',['npc:grace','stool0','stool1']);
   walk(g,[[tx(7),ty(8)],[tx(7),ty(12)+2],[tx(18),ty(12)+2],[tx(25),ty(11)],[tx(26),ty(7)]],46).then(()=>{ g.dir='left'; });
 }
 async function chapter4(){
@@ -2786,6 +2818,19 @@ async function chapter4(){
   S.flags.pmStage=0; setGoal('Yell for Mommy! ('+(isTouch()?'Press A':'Press Z or Space')+')');
   S.noFall=false; S.cut=false;
 }
+// ---------- picking the afternoon back up at a save point ----------
+function pmSetup(){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny; claim(g); claim(n); S.bathUser=null; doors.bath=true;
+  S.chapter=4; S.light='day'; S.clock='1:30 PM'; S.goal=''; S.glows=[]; S.flags.pmCalls=4;
+  if(S.map!=='house') setMap('house'); tvOn(false); S.vinTok=(S.vinTok||0)+1; hidden.delete('slider'); hidden.add('sliderOpen'); hidden.delete('bsmtdoor');
+  for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id);
+  n.visible=false; n.path=null; n.zBias=0; n.seated=false; g.visible=true; g.path=null; g.zBias=0; g.follow=false; g.seated=false;
+  v.visible=true; v.path=null; v.follow=false; v.ghost=false; [v.x,v.y]=COUCH; v.lie=true; v.sleep=true; v.zBias=8; v.dir='left';
+  P.visible=true; P.sheet=camSheet(); P.carry=null; P.lift=0; P.sit=0; P.zBias=0; P.lying=false; cribFront(false); S.bounds=null; S.noCollide=false; S.noFall=false; doors.cam=true; noise(0,0.3); foodOn(null); S.mini=null; S.tick=null; S.hud=null; }
+async function resumeLunch(){ const g=NPC.grace; S.cut=true; pmSetup(); P.x=tx(5)-5; P.y=ty(7); P.dir='right'; g.x=tx(26); g.y=ty(7); g.dir='left'; S.snapCam=true; S.fade=1;
+  S.flags.pmStage=2; save('lunch'); await fadeTo(0,700); setGoal('Go to the kitchen for lunch.',['npc:grace','stool0','stool1']); S.cut=false; }
+async function resumeDaddy(){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny; S.cut=true; pmSetup(); P.x=tx(26); P.y=ty(19)+2; P.dir='up'; g.x=tx(22); g.y=ty(5)-2; g.dir='right';
+  v.lie=false; v.sleep=false; v.zBias=0; v.x=P.x+20; v.y=P.y+6; v.dir='left'; n.visible=true; n.x=tx(15); n.y=ty(4); n.dir='down'; S.snapCam=true; S.fade=1;
+  S.flags.pmStage=4; save('daddy'); await fadeTo(0,700); setGoal('Go find Daddy.',['npc:nick']); S.cut=false; }
 async function lunch(){
   const g=NPC.grace, o=OBJ.stool0;
   S.flags.pmStage=3; setGoal('');
@@ -2836,7 +2881,7 @@ async function lunch(){
   await walk(n,[[tx(14),ty(4)+2],[tx(15),ty(4)]],40); n.dir='down'; hidden.delete('bsmtdoor'); blip(200,0.1,0.05,'triangle'); await wait(700);
   S.camFocus=null; await wait(500);
   bubble(P,'Daddy!',1300); await wait(900);
-  S.flags.pmStage=4; setGoal('Go find Daddy.',['npc:nick']);
+  S.flags.pmStage=4; save('daddy'); setGoal('Go find Daddy.',['npc:nick']);
 }
 async function basementDoor(){
   const n=NPC.nick; S.flags.pmStage=5; setGoal(''); face(n,faceTo(n,P));
@@ -2885,7 +2930,7 @@ async function chapter5(){
 }
 // one of the three is finished: Vinny after the first, Mom after the second, the drums after the third
 async function bsProgress(k){
-  const n=NPC.nick, g=NPC.grace, v=NPC.vinny; if(S.flags.bs[k]) return; S.flags.bs[k]=true; save(); const done=3-bsLeft().length;
+  const n=NPC.nick, g=NPC.grace, v=NPC.vinny; if(S.flags.bs[k]) return; S.flags.bs[k]=true; save('bs'); const done=3-bsLeft().length;
   if(done===1){ S.goal=''; S.targets=[];
     for(let i=0;i<4;i++){ blip(120+i*10,0.06,0.07,'triangle'); S.shake=0.08; await wait(180); }
     v.visible=true; v.sleep=false; v.lie=false; v.follow=false; v.x=BS.top[0]; v.y=BS.top[1]; v.dir='down';
@@ -2899,12 +2944,22 @@ async function bsProgress(k){
     bubble(g,'Have fun, boys!',1300); await wait(900); await walk(g,[[240,196],BS.top],52); g.visible=false; nickSit(); }
   if(done<3){ bsGoal(); return; }
   // the drums are ready
-  S.goal=''; S.targets=[]; S.flags.bsReady=true; save();
+  S.goal=''; S.targets=[]; S.flags.bsReady=true; save('bs');
   jingle([523,659,784,1047,1319],0.08,'triangle',0.06); bubble(n,'It\'s ready!',1500); await wait(900);
   await say('Dad','Okay bud, it finally loaded. Come here, let\'s play some drums!');
   bubble(P,'OH OH OH!!!!',1600); await hop(P,2);
   await bsToThrone(); await bsDrumScene();
 }
+// picking the basement back up: the toys already played stay played; with all three done it goes straight to the drums
+async function bsResume(){ const n=NPC.nick, g=NPC.grace, v=NPC.vinny; S.cut=true; claim(n); claim(g);
+  setMap('bsmt'); S.chapter=5; S.clock='2:15 PM'; S.light='day'; S.glows=[]; S.goal=''; S.targets=[]; S.extra=[]; S.bounds=null; S.noCollide=false; S.camFocus=null;
+  S.flags.bs=S.flags.bs||{}; S.flags.bsDone=false; hidden.add('b_sticks'); S.flags.sticks=true; const done=3-bsLeft().length; S.flags.bsReady=done>=3; save('bs');
+  g.visible=false; n.visible=true; n.onCouch=false; nickSit(); P.visible=true; P.sheet=camSheet(); P.sit=0; P.carry=null; P.lift=0; P.zBias=0; P.lying=false; P.seated=false; P.x=BS.kit[0]; P.y=BS.kit[1]; P.dir='left';
+  v.path=null; v.sleep=false; v.lie=false; v.zBias=0; v.visible=done>=1; v.follow=done>=1; v.x=P.x+18; v.y=P.y+8; v.dir='left'; crumbs.length=0;
+  S.tick=bsTick; S.hud=bsHud; BSN.on=false; BSN.noise=0; S.snapCam=true; S.fade=1; await fadeTo(0,700);
+  if(done>=3){ await say('Dad','Okay bud, it finally loaded. Come here, let\'s play some drums!'); await bsToThrone(); await bsDrumScene(); }
+  else bsGoal();
+  S.cut=false; }
 async function bsToThrone(){
   const n=NPC.nick; n.seated=false; S.noCollide=true; await walk(n,[[P.x+12,P.y+1]],74); n.dir='left'; P.carry=n; P.lift=9; P.zBias=3; blip(500,0.06,0.04,'triangle'); await wait(350);
   await walk(n,[[BS.throne[0]+14,BS.throne[1]+4]],54); n.dir='left'; await wait(200);
@@ -3302,7 +3357,7 @@ async function chapter6(){
 async function toYard(){
   const e=NPC.emory, n=NPC.nick, g=NPC.grace, r=NPC.ryan, l=NPC.lizz, v=NPC.vinny;
   for(const x of [n,g,r,l,v]){ x.visible=false; x.path=null; x.follow=false; }
-  setMap('yard'); S.clock='4:05 PM'; S.light='day'; S.goal=''; S.targets=[]; S.flags.yard=true; save();
+  setMap('yard'); S.clock='4:05 PM'; S.light='day'; S.goal=''; S.targets=[]; S.flags.yard=true; save('yard');
   hidden.add('y_slider'); hidden.delete('y_sliderOpen');
   const D=DATA_YARD.objs.find(o=>o.id==='y_slider'), dx=D.x+D.w/2;
   P.x=dx; P.y=D.y-6; P.dir='up'; P.lift=0; P.zBias=0; S.snapCam=true;

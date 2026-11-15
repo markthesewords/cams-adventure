@@ -247,7 +247,12 @@ async function walk(e,pts,speed){ e.hold=false; e.path=safePts(e,pts); e.pathSpe
 function face(e,d){ e.dir=d; }
 function setDoor(k,open){ doors[k]=open; blip(open?300:220,0.08,0.06,'triangle'); }
 // ---------------- save ----------------
-function save(){ try{ localStorage.setItem('camAdventure_v2',JSON.stringify({ch:S.chapter,inv:S.inv,flags:S.flags})); }catch(e){} }
+function hiOf(sv){ if(!sv) return {}; if(sv.hi) return sv.hi; const f=sv.flags||{}; return {ch:sv.ch,ps:sv.ch>4?6:sv.ch===4?(f.pmStage||0):0,out:f.outings||0,drums:(sv.ch>=6||f.bsReady)?1:0,yard:f.yard?1:0}; }
+// save(pt): pt names a save point inside the chapter (a major event). A save without one keeps the point only while still in that chapter.
+function save(pt){ if(pt){ S.pt=pt; S.ptCh=S.chapter; } else if(S.ptCh!==S.chapter){ S.pt=null; } const f=S.flags||{}, o=hiOf(loadSave()), M=(a,b)=>Math.max(a||0,b||0);
+  // hi: the furthest the player has ever got, so starting again from an earlier point never removes the later ones from the menu
+  const hi={ch:M(o.ch,S.chapter), ps:S.chapter>=4?M(S.chapter>(o.ch||0)?0:o.ps,S.chapter===4?f.pmStage:6):(o.ps||0), out:M(o.out,f.outings), drums:(o.drums||f.bsReady||S.chapter>=6)?1:0, yard:(o.yard||f.yard)?1:0};
+  try{ localStorage.setItem('camAdventure_v2',JSON.stringify({ch:S.chapter,pt:S.pt||null,inv:S.inv,flags:S.flags,hi})); }catch(e){} }
 function loadSave(){ try{ return JSON.parse(localStorage.getItem('camAdventure_v2')||'null'); }catch(e){ return null; } }
 // ---------------- update ----------------
 let last=performance.now();

@@ -55,7 +55,7 @@ async function chapter6(){
 async function toYard(){
   const e=NPC.emory, n=NPC.nick, g=NPC.grace, r=NPC.ryan, l=NPC.lizz, v=NPC.vinny;
   for(const x of [n,g,r,l,v]){ x.visible=false; x.path=null; x.follow=false; }
-  setMap('yard'); S.clock='4:05 PM'; S.light='day'; S.goal=''; S.targets=[]; S.flags.yard=true; save();
+  setMap('yard'); S.clock='4:05 PM'; S.light='day'; S.goal=''; S.targets=[]; S.flags.yard=true; save('yard');
   hidden.add('y_slider'); hidden.delete('y_sliderOpen');
   const D=DATA_YARD.objs.find(o=>o.id==='y_slider'), dx=D.x+D.w/2;
   P.x=dx; P.y=D.y-6; P.dir='up'; P.lift=0; P.zBias=0; S.snapCam=true;
