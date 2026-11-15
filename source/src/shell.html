@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>A Day in the Life of Cam</title>
+<style>
+html,body{margin:0;height:100%;background:#0e0c14;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+body.touch #wrap{align-items:flex-start;padding-top:env(safe-area-inset-top)}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+#u{position:absolute;left:0;top:0;pointer-events:none}
+#stage{position:relative}
+body.dream #stage{filter:saturate(1.25) brightness(1.06) blur(.45px);animation:dreamhue 6s ease-in-out infinite}
+@keyframes dreamhue{0%,100%{filter:saturate(1.25) brightness(1.06) blur(.45px) hue-rotate(-10deg)}50%{filter:saturate(1.35) brightness(1.1) blur(.7px) hue-rotate(12deg)}}
+#pad{display:none}
+body.touch #pad{display:block}
+.btn{position:fixed;width:58px;height:58px;border-radius:50%;background:rgba(24,20,36,0.42);border:2px solid rgba(255,255,255,0.28);color:#f4ead8;font:bold 18px "Trebuchet MS",sans-serif;display:flex;align-items:center;justify-content:center;touch-action:none}
+.btn.on{background:rgba(255,217,138,0.35)}
+#pad,#pad *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
+#ba{right:20px;bottom:84px;width:88px;height:88px;background:rgba(120,88,30,0.6);border-color:rgba(255,217,138,0.75);font-size:26px}
+#bb{right:122px;bottom:36px;width:66px;height:66px;font-size:20px}
+#bag{right:30px;bottom:194px;width:68px;height:32px;border-radius:16px;font-size:12px;letter-spacing:.08em}
+.btn small{position:absolute;left:0;right:0;bottom:-17px;text-align:center;font:600 10px "Trebuchet MS",sans-serif;color:rgba(244,234,216,0.55);letter-spacing:.06em;pointer-events:none}
+#tl{position:fixed;left:0;right:0;bottom:3px;display:none;justify-content:center;gap:3px;pointer-events:none;font-family:"Trebuchet MS",sans-serif}
+body.touch #tl{display:flex} body.touch[data-mode=talk] #tl{opacity:.5}
+#tl span{display:flex;align-items:center;gap:3px;padding:1px 4px;border-radius:9px;font-size:11px;opacity:.38;filter:grayscale(1)}
+#tl span i{font-style:normal} #tl span.done{opacity:.6;filter:none}
+#tl span.now{opacity:1;filter:none;background:rgba(255,217,138,0.16);border:1px solid rgba(255,217,138,0.5)} #tl span.now b{font-size:10px;color:#ffd98a;letter-spacing:.03em}
+#storyp .card.ff b:after{content:"  ▶▶"} #storyp .card.ff{border-color:#ffd98a}
+@media (orientation:landscape){ #tl{display:none!important} }
+/* what is on screen depends on what the player can do right now: walk / mini / talk / story */
+body.touch[data-mode=story] .btn, body.touch[data-mode=story] #badge, body.touch[data-mode=story] #dzone{display:none!important}
+body.touch[data-mode=talk] #bb, body.touch[data-mode=talk] #bag, body.touch[data-mode=talk] #badge{display:none}
+body.touch[data-mode=mini] #bag, body.touch[data-mode=mini] #badge, body.touch[data-mode=pick] #badge, body.touch[data-mode=pick] #bag, body.touch[data-mode=pick] #bb{display:none}
+body.touch[data-mode=mini] #bb small{display:none}
+body.touch[data-mode=mini] #dzone, body.touch[data-mode=pick] #dzone{display:block}
+#storyp{position:fixed;left:0;right:0;bottom:calc(8vh + 20px);text-align:center;display:none;pointer-events:none;color:#f4ead8;font-family:"Trebuchet MS",sans-serif}
+body.touch[data-mode=story] #storyp, body.touch[data-mode=talk] #storyp{display:block}
+#storyp .card{display:inline-block;padding:14px 22px 12px;border-radius:16px;background:rgba(28,24,40,0.9);border:2px solid rgba(255,217,138,0.55);min-width:210px}
+#storyp b{display:block;font-size:21px;letter-spacing:.03em;color:#ffd98a}
+#storyp span{display:block;margin-top:3px;font-size:13px;opacity:.8}
+#storyp .dots{margin-top:9px;height:12px}
+#storyp .dots i{display:inline-block;width:9px;height:9px;margin:0 4px;border-radius:50%;background:#ffd98a;animation:sdot 1.1s infinite ease-in-out}
+#storyp .dots i:nth-child(2){animation-delay:.18s;background:#FFB612}#storyp .dots i:nth-child(3){animation-delay:.36s;background:#b48ae0}
+@keyframes sdot{0%,70%,100%{transform:translateY(0);opacity:.45}35%{transform:translateY(-7px);opacity:1}}
+body[data-mode=talk] #storyp .dots{display:none} body[data-mode=talk] #storyp .card{min-width:0;padding:9px 18px;margin-right:120px}
+body[data-mode=talk] #storyp b{font-size:15px}
+@keyframes popin{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+body.handback .btn, body.handback #face{animation:popin .45s ease-out}
+@media (orientation:landscape){ #storyp{display:none!important} }
+/* the d-pad comes back only for games that pick things with arrows (the cube, the guitar) */
+#dzone{position:fixed;left:0;bottom:0;width:calc(var(--d) + 44px);height:calc(var(--d) + 44px);--d:clamp(132px,38vh,168px);display:none}
+#dpad{position:absolute;left:22px;bottom:22px;width:var(--d);height:var(--d);border-radius:50%;background:rgba(24,20,36,0.5);border:2px solid rgba(255,255,255,0.45);pointer-events:none}
+#dpad i{position:absolute;font:normal 22px sans-serif;color:#f4ead8;opacity:.6;transform:translate(-50%,-50%)}
+#dpad i.on{opacity:1;color:#ffd98a}
+#dpad i[data-d=up]{left:50%;top:17%}#dpad i[data-d=down]{left:50%;top:83%}#dpad i[data-d=left]{left:17%;top:50%}#dpad i[data-d=right]{left:83%;top:50%}
+/* the floating stick: appears under the thumb, gone on release */
+#stick{position:fixed;left:0;top:0;width:104px;height:104px;margin:-52px 0 0 -52px;border-radius:50%;border:2px solid rgba(255,255,255,0.45);background:rgba(24,20,36,0.28);display:none;pointer-events:none;z-index:5}
+#stick.run{border-color:rgba(255,217,138,0.9)}
+#knob{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(255,255,255,0.5);border:2px solid rgba(46,40,56,0.6)}
+#stick.run #knob{background:rgba(255,217,138,0.85)}
+/* "Cam's Day" badge where the d-pad used to be */
+#badge{position:fixed;left:18px;bottom:34px;width:150px;pointer-events:none;text-align:center}
+#face{position:relative;width:118px;height:118px;margin:0 auto;border-radius:50%;overflow:hidden;border:4px solid #ffd98a;box-shadow:0 0 0 3px #2e2838,0 0 0 6px rgba(255,217,138,0.25),0 6px 14px rgba(0,0,0,0.5);background:#2e2838}
+#face img{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity 1.2s}
+#ribbon{position:relative;display:inline-block;margin-top:-9px;padding:5px 16px 6px;background:#c4552b;border:3px solid #2e2838;border-radius:6px;color:#fff3d6;font:900 19px "Trebuchet MS","Arial Black",sans-serif;letter-spacing:.04em;text-shadow:2px 2px 0 #2e2838;transform:rotate(-3deg);white-space:nowrap}
+#ribbon:before,#ribbon:after{content:"★";position:absolute;top:-13px;color:#ffd98a;font-size:15px;text-shadow:1px 1px 0 #2e2838}
+#ribbon:before{left:-9px}#ribbon:after{right:-9px}
+body.story #badge{opacity:.75}
+@media (orientation:landscape){ body.touch #wrap{align-items:center;padding-top:0}
+ #ba{bottom:56px;right:14px;width:76px;height:76px}#bb{bottom:10px;right:100px}#bag{bottom:146px;right:20px} .btn{opacity:.8} .btn small{display:none} #badge{display:none} }
+@media (max-height:640px) and (orientation:portrait){ #face{width:84px;height:84px} #ribbon{font-size:15px} #badge{bottom:16px} }
+</style></head><body>
+<div id="wrap"><div id="stage"><canvas id="c"></canvas><canvas id="u"></canvas></div></div>
+<div id="pad">
+<div id="badge"><div id="face"><img id="f0" alt=""><img id="f1" alt="" style="opacity:0"></div><div id="ribbon">Cam's Day</div></div>
+<div id="dzone"><div id="dpad"><i data-d="up">▲</i><i data-d="down">▼</i><i data-d="left">◀</i><i data-d="right">▶</i></div></div>
+<div id="tl"></div>
+<div id="storyp"><div class="card"><b id="sp1">Story time</b><span id="sp2">Sit back and watch</span><div class="dots"><i></i><i></i><i></i></div></div></div>
+<div id="stick"><div id="knob"></div></div>
+<div class="btn" id="ba" data-k="a">A<small>DO</small></div><div class="btn" id="bb" data-k="b">B<small>RUN</small></div><div class="btn" id="bag" data-k="bag">BAG</div>
+</div>
+<script>/*ASSETS*/</script>
+<script>/*ENGINE*/</script>
+<script>/*STORY*/</script>
+<script>boot();</script>
+</body></html>
