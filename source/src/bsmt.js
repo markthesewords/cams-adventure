@@ -44,7 +44,7 @@ async function bsProgress(k){
   // the drums are ready
   S.goal=''; S.targets=[]; S.flags.bsReady=true; save('bs');
   jingle([523,659,784,1047,1319],0.08,'triangle',0.06); bubble(n,'It\'s ready!',1500); await wait(900);
-  await say('Dad','Okay bud, it finally loaded. Come here, let\'s play some drums!');
+  await say('Dad','Okay dude, it finally loaded. Come here, let\'s play some drums!');
   bubble(P,'OH OH OH!!!!',1600); await hop(P,2);
   await bsToThrone(); await bsDrumScene();
 }
@@ -55,7 +55,7 @@ async function bsResume(){ const n=NPC.nick, g=NPC.grace, v=NPC.vinny; S.cut=tru
   g.visible=false; n.visible=true; n.onCouch=false; nickSit(); P.visible=true; P.sheet=camSheet(); P.sit=0; P.carry=null; P.lift=0; P.zBias=0; P.lying=false; P.seated=false; P.x=BS.kit[0]; P.y=BS.kit[1]; P.dir='left';
   v.path=null; v.sleep=false; v.lie=false; v.zBias=0; v.visible=done>=1; v.follow=done>=1; v.x=P.x+18; v.y=P.y+8; v.dir='left'; crumbs.length=0;
   S.tick=bsTick; S.hud=bsHud; BSN.on=false; BSN.noise=0; S.snapCam=true; S.fade=1; await fadeTo(0,700);
-  if(done>=3){ await say('Dad','Okay bud, it finally loaded. Come here, let\'s play some drums!'); await bsToThrone(); await bsDrumScene(); }
+  if(done>=3){ await say('Dad','Okay dude, it finally loaded. Come here, let\'s play some drums!'); await bsToThrone(); await bsDrumScene(); }
   else bsGoal();
   S.cut=false; }
 async function bsToThrone(){
@@ -74,6 +74,10 @@ async function bsDrumScene(replay){
   award('drummer'); await wait(900);
   await say('Dad','That was awesome, dude! High five!'); bubble(P,'Yeah!!!',1200); blip(900,0.05,0.05,'triangle'); await wait(1000);
   if(v.visible){ bubble(v,'Awooo!',1300); blip(260,0.3,0.06,'sawtooth'); await wait(900); }
+  // more songs before Mom calls down
+  while(true){ const c=await choose('Play another song?',['Another song!','All done'],'Dad'); if(c!==0) break;
+    await fadeTo(1,300); const pr2=drumGame({replay:true}); await fadeTo(0,300); const r2=await pr2; best('drums',r2.score); await showBoard('drums','THE DRUMS',r2.score,r2.song);
+    await fadeTo(1,300); S.mini=null; S.snapCam=true; P.lift=4; P.zBias=4; P.x=BS.throne[0]; P.y=BS.throne[1]; P.dir='down'; await fadeTo(0,300); }
   S.flags.bsDone=true; save();
   await emoryIsHere();
 }
@@ -99,18 +103,18 @@ function bsHud(){ if(S.map==='bsmt'&&BSN.on&&!S.mini&&!S.lock) bsMeter(BSN.noise
 // ---------------- handlers ----------------
 CH[5]={
   npc_nick: async()=>{ const L=bsLeft();
-    if(S.flags.bsDone) await say('Dad','Want to play some more? The drums are right there, bud.');
+    if(S.flags.bsDone) await say('Dad','Want to play some more? The drums are right there, little dude.');
     else if(L.length===3) await say('Dad','Still loading, dude. Go find something to do. Just not the guitar. ...Okay, maybe the guitar.');
     else await say('Dad',['Almost there. This computer is older than you are.','Any second now. Probably.'][L.length%2]); },
   npc_vinny: async()=>{ bubble(NPC.vinny,'*lick*',900); blip(240,0.08,0.05,'square'); await wait(600); bubble(P,'Hee hee!',900); },
   npc_grace: async()=>{},
   bs_drums: async()=>{ if(S.flags.bsDone){ const c=await choose('Play the drums again?',['Yes!','Not now']); if(c===0){ await bsToThrone(); await bsDrumScene(true); } return; }
-    bubble(P,'Oh oh oh?',1000); for(let i=0;i<3;i++){ blip(180,0.03,0.03,'triangle'); await wait(160); } await say('Dad','Not yet, bud! It\'s still loading. Nothing will come out.'); },
+    bubble(P,'Oh oh oh?',1000); for(let i=0;i<3;i++){ blip(180,0.03,0.03,'triangle'); await wait(160); } await say('Dad','Not yet, dude! It\'s still loading. Nothing will come out.'); },
   bs_guitar: async()=>{ const pr=guitarPlay(); const r=await pr; S.mini=null; if(r.plucks>=6){ unlock('guitar'); award('strum'); await bsProgress('guitar'); } },
   bs_cube: async()=>{ await fadeTo(1,250); const pr=cubeTour(); await fadeTo(0,250); const r=await pr; if(r.done){ best('cube',r.score); await showBoard('cube','ACTIVITY CUBE',r.score,''); }
     await fadeTo(1,250); S.mini=null; await fadeTo(0,250); if(r.done){ S.tip={txt:'Activity cube: '+r.score+' points',until:S.t+4}; award('cube'); await bsProgress('cube'); } },
   bs_heard: async()=>{ const n=NPC.nick; S.shake=0.15; blip(200,0.2,0.06,'sawtooth');
-    await say('Dad','(from the other room) Cam? Where\'d you go, bud? Come back out here.');
+    await say('Dad','(from the other room) Cam? Where\'d you go, little man? Come back out here.');
     S.noCollide=true; await walk(P,[[150,264],[196,266],[236,256]],50); S.noCollide=false; P.dir='down'; await say('','Busted. Maybe quieter next time.'); },
   bs_bed: async()=>{ const n=NPC.nick, v=NPC.vinny;
     if(!bsInBedroom()) return;
@@ -127,8 +131,12 @@ CH[5]={
     await say('Dad',r.jumps>=10?'How long were you up there?! ...Stay where I can see you, goofball.':'Stay where I can see you, goofball.');
     await walk(n,[[BS.seat[0],BS.seat[1]-2]],50); nickSit();
     await bsProgress('bed'); },
-  bs_stairs: async()=>{ if(S.flags.bsDone){ await say('Dad','We\'ll head up for dinner soon, bud.'); S.fadeText='To be continued'; S.fadeSub='Next: dinner at Frenchman\'s'; await fadeTo(1,1200); await wait(2600); S.fadeText=null; S.fadeSub=null; await fadeTo(0,600); }
-    else await say('Dad','Stay down here with me, bud. It\'s almost ready.'); },
+  bs_stairs: async()=>{ if(S.flags.bsDone){ await say('Dad','We\'ll head up for dinner soon, little man.'); S.fadeText='To be continued'; S.fadeSub='Next: dinner at Frenchman\'s'; await fadeTo(1,1200); await wait(2600); S.fadeText=null; S.fadeSub=null; await fadeTo(0,600); }
+    else await say('Dad','Stay down here with me, dude. It\'s almost ready.'); },
+  bs_tread: async()=>{ bubble(P,'Oh oh oh!',1000); await wait(600);
+    await say('Dad','(from the desk) The treadmill? ...Okay. Real slow, little dude.');
+    await fadeTo(1,300); const pr=treadGame(mLevel('tread')); await fadeTo(0,300); const r=await pr; S.mini=null; mPlayed('tread'); best('tread',r.score); if(!r.flew) award('runner');
+    await showBoard('tread','TREADMILL',r.score,r.feet+' ft'); if(r.flew){ P.sit=1; bubble(P,'Again!',1200); } },
   bs_door: async()=>{ await say('','Closed. Nothing fun in there anyway.'); },
   bs_desk: async()=>{ await say('','A lot of cables, two speakers, and a progress bar that has not moved.'); },
   bs_easel: async()=>{ bubble(P,'A, B, C!',1100); await wait(800); await say('','Magnet letters and four cups of paint. Somebody has rearranged the letters.'); },
@@ -150,7 +158,7 @@ function guitarPlay(){
   return new Promise(resolve=>{
     const OPEN=[82.4,110,146.8,196,246.9,329.6]; const G={t:0,str:2,fret:0,plucks:0,vib:[0,0,0,0,0,0],cap:'Dad\'s red guitar. Strum it!',capT:3,said:0};
     const pluck=i=>{ G.vib[i]=1; G.plucks++; const f=OPEN[i]*Math.pow(2,G.fret*2/12); blip(f,0.7,0.07,'triangle'); blip(f*2,0.25,0.02,'sawtooth');
-      if(G.plucks===4&&G.said<1){ G.said=1; G.cap='Careful with that one, bud!'; G.capT=2.6; } if(G.plucks===12&&G.said<2){ G.said=2; G.cap='Hey, that almost sounded like a song!'; G.capT=2.6; } if(G.plucks===30&&G.said<3){ G.said=3; G.cap='Okay, okay. Rock star.'; G.capT=2.6; } };
+      if(G.plucks===4&&G.said<1){ G.said=1; G.cap='Careful with that one, dude!'; G.capT=2.6; } if(G.plucks===12&&G.said<2){ G.said=2; G.cap='Hey, that almost sounded like a song!'; G.capT=2.6; } if(G.plucks===30&&G.said<3){ G.said=3; G.cap='Okay, okay. Rock star.'; G.capT=2.6; } };
     S.mini={ full:true, G, guitar:true, dpad:true,
       taps(){ const W=VW,Hh=VH, cx=W/2, cy=Hh*0.48, k=Math.min(1,(W-16)/300); return [{x:cx-190*k,y:cy-34*k,w:330*k,h:68*k,fn(x,y){ const i=Math.max(0,Math.min(5,Math.round(((y-cy)/k+8.5)/3.4))); if(x<cx+14*k) G.fret=Math.max(0,Math.min(6,Math.round(((x-cx)/k+116)/22))); G.str=i; pluck(i); }}]; },
       update(dt){ G.t+=dt; if(G.capT>0) G.capT-=dt; for(let i=0;i<6;i++) G.vib[i]*=Math.max(0,1-dt*3.2);
@@ -293,11 +301,11 @@ function drumGame(opts){ opts=opts||{};
     const PADS={hat:{x:-88,y:-6,rx:27,ry:10,key:'b',name:'Hi-hat',cym:1},crash:{x:86,y:-44,rx:31,ry:11,key:'a',name:'Crash cymbal',cym:1},tom:{x:-18,y:-26,rx:27,ry:12,key:'up',name:'Tom'},kick:{x:26,y:4,rx:17,ry:15,key:'down',name:'Kick drum',kick:1},snare:{x:-36,y:34,rx:35,ry:17,key:'left',name:'Snare'},floor:{x:66,y:30,rx:37,ry:18,key:'right',name:'Floor tom'}};
     const KEYLAB=k=>({up:'▲',down:'▼',left:'◀',right:'▶',a:keyName('a'),b:keyName('b')})[k];
     const LEARN=['kick','snare','tom','floor','hat','crash'];
-    const G={t:0,phase:opts.replay?'pick':'free',pT:0,diff:'easy',full:false,menu:null,limit:60,hits:0,flash:{},stick:null,cap:opts.replay?'':opts.dream?'Bang the drums, buddy!':'Bang on anything! Every button is a drum.',capT:opts.replay?0:4,capWho:'Dad',score:0,streak:0,bestStreak:0,perfect:0,good:0,miss:0,jam:0,li:0,quiz:null,qn:0,notes:[],t0:0,nextBeat:0,fx:[],song:song.name,done:false,learnT:0,count:0};
+    const G={t:0,phase:opts.replay?'pick':'free',pT:0,diff:'easy',full:false,menu:null,limit:60,hits:0,flash:{},stick:null,cap:opts.replay?'':opts.dream?'Bang the drums, little dude!':'Bang on anything! Every button is a drum.',capT:opts.replay?0:4,capWho:'Dad',score:0,streak:0,bestStreak:0,perfect:0,good:0,miss:0,jam:0,li:0,quiz:null,qn:0,notes:[],t0:0,nextBeat:0,fx:[],song:song.name,done:false,learnT:0,count:0};
     const cap=(s,d)=>{ G.cap=s; G.capT=d||2.6; };
-    const songTime=()=>G.live?AC.currentTime-G.t0:G.pT-1.5;
+    const songTime=()=>G.live?AC.currentTime-G.t0+0.08:G.pT-1.5;   // +80 ms: the charts sat a touch behind the music
     const strike=p=>{ if(G.phase==='pick'||G.phase==='load') return; drumSound(p,G.phase==='song'?0.75:1); G.flash[p]=1; G.stick={p,t:0}; G.hits++; buzz(8);
-      if(G.phase==='free'){ if(G.hits===6) cap('Yeah, buddy!',1.8); if(G.hits>=14&&G.pT>4){ G.phase='learnIntro'; G.pT=0; cap('Okay, let me show you what everything is.',2.6); } }
+      if(G.phase==='free'){ if(G.hits===6) cap('Yeah, little man!',1.8); if(G.hits>=14&&G.pT>4){ G.phase='learnIntro'; G.pT=0; cap('Okay, let me show you what everything is.',2.6); } }
       else if(G.phase==='learn'){ const want=LEARN[G.li]; if(p===want){ jingle([784,1047],0.05,'triangle',0.04); G.li++; G.learnT=0; if(G.li>=LEARN.length){ G.phase='quizIntro'; G.pT=0; cap('Now you find them. Ready?',2.2); } else cap('That\'s the '+PADS[LEARN[G.li]].name.toLowerCase()+'!  ('+KEYLAB(PADS[LEARN[G.li]].key)+')',9); } else cap('That one is the '+PADS[p].name.toLowerCase()+'. Try the '+PADS[want].name.toLowerCase()+'!',9); }
       else if(G.phase==='quiz'){ if(p===G.quiz){ jingle([784,1047,1319],0.05,'triangle',0.04); G.score+=50; G.qn++; if(G.qn>=4){ G.phase='songIntro'; G.pT=0; cap('You got it! Now pick a song. Hit the drums when the rings close in.',3.4); } else nextQuiz(); } else cap('That\'s the '+PADS[p].name.toLowerCase()+'. Where\'s the '+PADS[G.quiz].name.toLowerCase()+'?',9); }
       else if(G.phase==='song'){ const st=songTime(); let bestN=null; for(const n of G.notes){ if(n.hit||n.miss||n.p!==p) continue; const d=Math.abs(n.t-st); if(d<0.22&&(!bestN||d<Math.abs(bestN.t-st))) bestN=n; }
@@ -363,6 +371,11 @@ function drumGame(opts){ opts=opts||{};
           else if(q.kick){ uRR(x-rx-3*s,y-ry-4*s,rx*2+6*s,ry*2+12*s,5*s,'#26262c',CO,1.2); ell(x,y,rx,ry,'#16161a',CO,1); ell(x,y,rx*0.82*(1-fl*0.1),ry*0.82*(1-fl*0.1),fl>0.1?'#fff6c8':'#e8e8e4'); ell(x,y,rx*0.4,ry*0.4,null,'rgba(0,0,0,0.14)',0.8); }
           else { const dep=9*s; U.beginPath(); U.ellipse(x,y+dep,rx,ry,0,0,Math.PI); U.lineTo(x-rx,y); U.ellipse(x,y,rx,ry,0,Math.PI,0,true); U.closePath(); U.fillStyle='#1c1c22'; U.fill(); U.strokeStyle=CO; U.lineWidth=1.3; U.stroke(); U.fillStyle='#c8ccd4'; for(let i=0;i<5;i++){ const a=0.3+i*0.6; U.fillRect(x+Math.cos(a)*rx-1,y+Math.sin(a)*ry+2*s,2,dep-3*s); }
             ell(x,y,rx,ry,'#101014',CO,1.3); ell(x,y+dip*0.5,rx*0.9,ry*0.88,fl>0.1?'#fff6c8':'#f2f2ee'); ell(x,y+dip*0.5,rx*0.5,ry*0.5,null,'rgba(0,0,0,0.1)',0.8); U.fillStyle='rgba(255,255,255,0.5)'; U.beginPath(); U.ellipse(x-rx*0.3,y-ry*0.3,rx*0.35,ry*0.2,-0.2,0,7); U.fill(); }
+          if(lit===k){ // the one Dad is pointing at: lit up on top, a bright ring, and a bouncing arrow over it
+            const p=0.5+0.5*Math.sin(G.t*7), b=Math.abs(Math.sin(G.t*5))*5*s; U.save(); U.globalCompositeOperation='lighter'; ell(x,y+dip,rx*0.95,ry*0.92,'rgba(255,205,90,'+(0.30+0.25*p)+')'); U.restore();
+            ell(x,y,rx+2*s,ry+2*s,null,'#fff2b0',2.6+1.4*p); ell(x,y,rx+5*s,ry+4.5*s,null,'rgba(255,217,138,'+(0.45+0.4*p)+')',1.6);
+            const ay=y-ry-(q.kick?16:10)*s-b; U.fillStyle='#ffd23a'; U.strokeStyle=CO; U.lineWidth=1.2; U.beginPath(); U.moveTo(x-6*s,ay-8*s); U.lineTo(x+6*s,ay-8*s); U.lineTo(x,ay); U.closePath(); U.fill(); U.stroke(); }
+          else if(lit&&G.phase==='learn'){ ell(x,y,rx+1,ry+1,'rgba(14,10,24,0.35)'); }
           uCirc(x,y+(q.kick?0:ry*0.1),5.2,'rgba(28,24,40,0.82)',null); txt(KEYLAB(q.key),x,y+(q.kick?0:ry*0.1)-3.6,'#ffd98a',6.5,'center',true);
           if(G.phase==='song') for(const n of G.notes){ if(n.p!==k||n.hit||n.miss) continue; const d=n.t-st; if(d>1.1||d<-0.22) continue; const grow=Math.max(0,d)*34*s; U.globalAlpha=Math.min(1,1.25-d); ell(x,y,rx+grow,ry+grow*ry/rx,null,d<0.09?'#fff':'#ffd98a',d<0.2?2.4:1.6); U.globalAlpha=1; } }
         // Cam's knees, his foot on the kick pedal, and two forearms with sticks coming in from the bottom of the view
@@ -390,7 +403,7 @@ function drumGame(opts){ opts=opts||{};
         if(G.capT>0&&G.phase!=='end') bsCap(G.capWho,G.cap); else if(G.capT>0) bsCap('Dad',G.cap); } };
   });
 }
-function bsCap(who,s){ if(who) return pgCaption(who,s); if(!s) return; const W=VW,Hh=VH; U.font='6.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=Math.min(W-10,U.measureText(s).width+16); uRR(W/2-tw/2,Hh-15,tw,12,6,'rgba(24,20,34,0.9)','#ffd98a',0.8); txt(s,W/2,Hh-12,'#fff',6.5,'center'); }
+function bsCap(who,s){ if(who) return pgCaption(who,s); if(!s||S.noHud) return; const W=VW,Hh=VH; U.font='6.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=Math.min(W-10,U.measureText(s).width+16); uRR(W/2-tw/2,Hh-15,tw,12,6,'rgba(24,20,34,0.9)','#ffd98a',0.8); txt(s,W/2,Hh-12,'#fff',6.5,'center'); }
 
 // the "this one is selected" frame on the cube: thick, dark-edged, and gently pulsing so it can't be missed
 function cubeSel(x,y,w,h,t){ const p=0.5+0.5*Math.sin(t*7), g=1.5+p*1.5; x-=g; y-=g; w+=g*2; h+=g*2;

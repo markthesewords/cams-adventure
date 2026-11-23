@@ -7,7 +7,7 @@ async function napScene(){
   S.vinTok=(S.vinTok||0)+1; setGoal(''); bubble(P,'*yawn*',1200); await wait(900);
   n.visible=true; n.path=null; n.x=tx(7); n.y=ty(12); n.dir='up'; doors.cam=true;
   await walk(n,[[tx(7),ty(8)],[P.x+12,P.y+1]],60); n.dir='left';
-  await say('Dad','Tired, huh, buddy? I guess it\'s that time.');
+  await say('Dad','Tired, huh, little man? I guess it\'s that time.');
   P.carry=n; P.lift=9; P.zBias=3; S.noCollide=true; blip(500,0.06,0.04,'triangle'); await wait(400);
   await walk(n,[[tx(3)+4,ty(6)+6],[tx(2),ty(6)+2]],44); n.dir='down'; n.zBias=24; P.zBias=28; P.lift=4; await wait(500);
   await say('Dad','Wanna read "Dog"?');
@@ -16,7 +16,7 @@ async function napScene(){
   bubble(P,'*yawn*',1100); await wait(900);
   n.zBias=0; P.zBias=3; P.lift=9; await walk(n,[[tx(3)+4,ty(6)+6],CRIB_SIDE],38); n.dir='up'; await wait(300);
   P.carry=null; P.lift=0; P.zBias=0; [P.x,P.y]=CRIB; P.dir='down'; P.lying=true; cribFront(true); S.bounds=CRIB_BOUNDS; blip(300,0.05,0.04,'triangle'); await wait(500);
-  await say('Dad','Night night, buddy. Love you.');
+  await say('Dad','Night night, little man. Love you.');
   await walk(n,[[tx(5),ty(7)],[tx(7),ty(8)-4],[tx(7),ty(12)]],40); setDoor('cam',false); n.visible=false; noise(NOISE_VOL,2.5); await wait(500);
   S.fadeText='1:30 PM'; S.fadeSub='Nap time is over'; await fadeTo(1,1800); await wait(1500);
   chapter4();
@@ -24,7 +24,7 @@ async function napScene(){
 CH[4]={
   _nothing: async()=>{ if(S.flags.pmStage===0) return yellMommy(); return H._nothing(); },
   crib: async()=>{ if(S.flags.pmStage===0) return yellMommy(); return H.crib(); },
-  npc_grace: async()=>{ if(S.flags.pmStage===2) return lunch(); await say('Mom', S.flags.pmStage>=4?'Go find Daddy, bud.':'Hi, sweet boy.'); },
+  npc_grace: async()=>{ if(S.flags.pmStage===2) return lunch(); if(S.flags.pmStage===4) return pickOuting(); await say('Mom','Hi, sweet boy.'); },
   stool: async()=>{ if(S.flags.pmStage===2) return lunch(); return H.stool(); },
   npc_nick: async()=>{ if(S.flags.pmStage===4) return basementDoor(); return H.npc_nick(); },
   bsmtdoor: async()=>{ if(S.flags.pmStage===4){ bubble(P,'Oh oh oh?',1200); return; } return H.bsmtdoor(); },
@@ -80,6 +80,7 @@ async function resumeLunch(){ const g=NPC.grace; S.cut=true; pmSetup(); P.x=tx(5
 async function resumeDaddy(){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny; S.cut=true; pmSetup(); P.x=tx(26); P.y=ty(19)+2; P.dir='up'; g.x=tx(22); g.y=ty(5)-2; g.dir='right';
   v.lie=false; v.sleep=false; v.zBias=0; v.x=P.x+20; v.y=P.y+6; v.dir='left'; n.visible=true; n.x=tx(15); n.y=ty(4); n.dir='down'; S.snapCam=true; S.fade=1;
   S.flags.pmStage=4; save('daddy'); await fadeTo(0,700); setGoal('Go find Daddy.',['npc:nick']); S.cut=false; }
+async function resumePmOut(){ const g=NPC.grace; S.cut=true; pmSetup(); P.x=tx(26); P.y=ty(19)+2; P.dir='up'; g.visible=true; g.x=tx(28); g.y=ty(18); g.dir='left'; S.snapCam=true; S.fade=1; S.flags.pmStage=3; await fadeTo(0,700); await pmOuting(); S.cut=false; }
 async function lunch(){
   const g=NPC.grace, o=OBJ.stool0;
   S.flags.pmStage=3; setGoal('');
@@ -121,7 +122,32 @@ async function lunch(){
   bubble(P,'Yeah!!',1500); jingle([784,988,1175],0.08,'triangle',0.05); await hop(P,2); await wait(600);
   walk(g,[[tx(28),ty(12)],[tx(25)+8,ty(7)],[tx(23),ty(7)],[tx(21),ty(7)],[tx(21),ty(5)],[tx(22),ty(5)-2]],60).then(async()=>{ g.dir='right'; bubble(g,'*wipe wipe*',800); await wait(900); foodOn(null); });
   walk(v,[[P.x+20,P.y+6]],70).then(()=>{ v.dir='left'; });
-  await wait(1600);
+  await wait(3400);
+  await pmOuting();
+}
+// the afternoon adventure: the park or Cub Foods (the walk was this morning)
+async function pmOuting(){ const g=NPC.grace;
+  claim(g); await walk(g,[[P.x+14,P.y-2]],70); g.dir='left'; P.dir='right';
+  await say('Mom','Okay, snack monster. Daddy\'s busy downstairs for a bit. Adventure time!');
+  const c=await choose('Where should we go?',['Go to the park','Go to Cub Foods'],'Mom');
+  S.flags.pmStage=3.5; save('pmout');
+  if(c===0){ await parkOuting(); S.flags.didPark=true; S.flags.lastOut='park'; } else { await cubOuting(); S.flags.didCub=true; S.flags.lastOut='cub'; }
+  S.flags.outings=(S.flags.outings||0)+1;
+  await pmBack(false);
+}
+// home again at 2:00; the first time, the basement thumps follow
+async function pmBack(replay){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny;
+  claim(g); S.chapter=4; S.clock=replay?S.clock:'2:00 PM'; P.sit=0; S.noCollide=true; g.path=null; g.x=FRONT[0]; g.y=FRONT[1]; g.dir='up'; g.visible=true; g.zBias=0; P.carry=g; P.lift=9; P.zBias=3; P.x=g.x; P.y=g.y;
+  if(!replay){ n.visible=false; n.path=null; } else { n.visible=true; n.path=null; n.x=tx(15); n.y=ty(4)+2; n.dir='down'; } v.visible=true; v.path=null; v.follow=false; v.lie=true; v.sleep=true; [v.x,v.y]=COUCH; v.zBias=8; v.dir='left';
+  S.snapCam=true; S.fadeText=null; blip(260,0.12,0.06,'triangle'); await fadeTo(0,700);
+  await walk(g,[FRONT_IN],56); g.dir='left'; await wait(250);
+  setDown(); P.x=g.x-13; P.y=g.y+2; P.dir='right'; blip(300,0.05,0.04,'triangle'); await wait(300);
+  await say('Mom',replay?'Home again. Go find Daddy, bud.':'Home again! Whew.');
+  g.node=null; ambient(g);
+  if(replay){ S.flags.pmStage=4; save('daddy'); setGoal('Go find Daddy.',['npc:nick']); return; }
+  await wait(900); await pmThumps();
+}
+async function pmThumps(){ const v=NPC.vinny; P.dir='left';
   // footsteps on the basement stairs
   for(let i=0;i<3;i++){ S.tip={txt:'thump'+'  thump'.repeat(i),until:S.t+1.2}; blip(70,0.16,0.09,'sine'); S.shake=0.06; await wait(650); }
   P.dir='left'; bubble(P,'!',900); await wait(700);

@@ -316,7 +316,7 @@ function cubDraw(G){
   U.save(); if(G.shake>0) U.translate((Math.random()-0.5)*5*G.shake/0.2,(Math.random()-0.5)*4*G.shake/0.2);
   cubStore(G,0);
   // hanging aisle sign
-  U.fillStyle=CO; U.fillRect(cx-24,0,1,5); U.fillRect(cx+23,0,1,5); uRR(cx-38,3,76,13,2.5,'#d8232a',CO,0.9); txt('AISLE '+(ai+1)+'  '+a.name.toUpperCase(),cx,6,'#fff',6,'center',true);
+  if(!S.noHud){ U.fillStyle=CO; U.fillRect(cx-24,0,1,5); U.fillRect(cx+23,0,1,5); uRR(cx-38,3,76,13,2.5,'#d8232a',CO,0.9); } txt('AISLE '+(ai+1)+'  '+a.name.toUpperCase(),cx,6,'#fff',6,'center',true);
   // shoppers still far down the aisle (behind Mom)
   const shs=G.shoppers.slice().sort((p,q)=>p.p-q.p); for(const sh of shs) if(sh.p<0.78&&!sh.close) cubShopper(G,sh);
   // items riding the shelves toward Cam
@@ -356,9 +356,9 @@ function cubDraw(G){
     G.cart.forEach((c,i)=>{ const k=Math.min(1,c.t/0.18), sq=c.t<0.18?1+Math.sin(k*Math.PI)*0.35:1; const s=10; U.drawImage(cubIcon(c.id),16+i*11+(s-s*sq)/2,Hh-17.5+(s-s/sq),s*sq,s/sq); }); }
   const mult=cubMult(G.chain), pu=G.pulse>0?1+G.pulse*0.6:1;
   box(W-58,3,55,13,'rgba(28,24,40,0.85)'); txt(String(G.score),W-8,6+ (1-pu)*2,'#ffd98a',7*pu,'right',true); txt('PTS',W-54,7,'#a9a0b8',5.5);
-  if(G.chain>0){ const cw=55; uRR(W-58,18,cw,10,3,mult>1?'#5a3a8a':'rgba(28,24,40,0.85)','#ffd98a',0.7); txt('CHAIN '+G.chain,W-55,20,'#fff',5.5,'left',true); txt('x'+mult,W-6,19.5,'#ffd98a',6.5,'right',true);
+  if(G.chain>0&&!S.noHud){ const cw=55; uRR(W-58,18,cw,10,3,mult>1?'#5a3a8a':'rgba(28,24,40,0.85)','#ffd98a',0.7); txt('CHAIN '+G.chain,W-55,20,'#fff',5.5,'left',true); txt('x'+mult,W-6,19.5,'#ffd98a',6.5,'right',true);
     const nxt=G.chain>=15?15:G.chain>=10?15:G.chain>=6?10:G.chain>=3?6:3, prv=G.chain>=15?15:G.chain>=10?10:G.chain>=6?6:G.chain>=3?3:0; if(nxt>prv){ U.fillStyle='#ffd98a'; U.fillRect(W-57,27,(cw-2)*(G.chain-prv)/(nxt-prv),1); } }
-  if(G.reqs) G.reqs.forEach((id,i)=>{ const ry=(W<260?32:3)+i*22; uRR(3,ry,72,20,4,'rgba(28,24,40,0.88)','#7bd95a',1); U.drawImage(cubIcon(id),5,ry+2,16,16); txt('MOM WANTS',24,ry+3,'#7bd95a',5.5,'left',true); txt(CUB.items[id][3],24,ry+10,'#fff',6.5,'left',true); });
+  if(G.reqs&&!S.noHud) G.reqs.forEach((id,i)=>{ const ry=(W<260?32:3)+i*22; uRR(3,ry,72,20,4,'rgba(28,24,40,0.88)','#7bd95a',1); U.drawImage(cubIcon(id),5,ry+2,16,16); txt('MOM WANTS',24,ry+3,'#7bd95a',5.5,'left',true); txt(CUB.items[id][3],24,ry+10,'#fff',6.5,'left',true); });
   if(G.sneak>0&&m.look<0.5){ txt('SNEAK x'+G.sneak,cx,Hh*0.86,'#ffd98a',7,'center',true); }
   for(const f of G.fx){ const k=f.t; U.globalAlpha=k>0.7?(1-k)/0.3:1; const pop=k<0.12?0.6+k/0.12*0.6:k<0.2?1.2-(k-0.12)/0.08*0.2:1; txt(f.txt,Math.max(24,Math.min(W-24,f.x)),f.y-k*18,f.col,f.size*pop,'center',true); U.globalAlpha=1; }
   if(m.say&&!G.talk) drawBubbleU(m.say,cx,hy_-52,Math.min(170,W-24));

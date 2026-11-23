@@ -48,7 +48,7 @@ const PG={T:12,W:62,H:24,pf:[],cl:[],stars:[],zones:[]};
     [40,16.6],[41,15],[41,13],[43,11.5],[43,9],[41,8.6],[45,8.6],[47,19],[47,16],[47,13],[16,20.6],[18,20.6],[51,20.6],[54,20.6],[3,18.5]]) star(x,y);
 })();
 const PGS={got:new Set(),x:40,y:264,slides:{big:0,curly:0},t:0};   // one visit to the playground
-function pgCaption(who,s){ if(!s) return; const W=VW,Hh=VH; U.font='6.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=Math.min(W-10,U.measureText(who+':  '+s).width+16); uRR(W/2-tw/2,Hh-15,tw,12,6,'rgba(24,20,34,0.9)','#ffd98a',0.8); const x0=W/2-tw/2+8; txt(who+':',x0,Hh-12,'#ffd98a',6.5,'left',true); U.font='bold 6.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const nw=U.measureText(who+': ').width; txt(s,x0+nw+2,Hh-12,'#fff',6.5); }
+function pgCaption(who,s){ if(!s||S.noHud) return; const W=VW,Hh=VH; U.font='6.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=Math.min(W-10,U.measureText(who+':  '+s).width+16); uRR(W/2-tw/2,Hh-15,tw,12,6,'rgba(24,20,34,0.9)','#ffd98a',0.8); const x0=W/2-tw/2+8; txt(who+':',x0,Hh-12,'#ffd98a',6.5,'left',true); U.font='bold 6.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const nw=U.measureText(who+': ').width; txt(s,x0+nw+2,Hh-12,'#fff',6.5); }
 function playgroundGame(){
   return new Promise(resolve=>{
     const T=PG.T, LW=PG.W*T, LH=PG.H*T, GY=22*T;
@@ -255,14 +255,14 @@ function slideBig(opts){ opts=opts||{};
         const cs=Math.max(0.72,z); U.save(); U.translate(X(G.x),Y(G.y)-1); U.scale(cs,cs);
         if(G.phase==='land') pgCam(0,0,'jump',G.t,{}); else if(G.phase==='ready') pgCam(0,0,'slide',G.t,{}); else if(G.good) pgCam(0,0,'duck',0,{rot:ang}); else pgCam(0,0,'slide',G.t,{rot:ang,arms:!G.gnd,squash:G.sq}); U.restore();
         // how big the next jump will be
-        if(G.phase==='ride'&&G.gnd&&G.x<END){ const bx=X(G.x)-13, by=Y(G.y)-36*cs; uRR(bx-1,by-1,28,6,3,'rgba(28,24,40,0.85)',CO,0.7); uRR(bx,by,Math.max(2,26*G.charge),4,2,G.charge>0.75?'#7bd95a':'#ffd23a',null); }
+        if(!S.noHud&&G.phase==='ride'&&G.gnd&&G.x<END){ const bx=X(G.x)-13, by=Y(G.y)-36*cs; uRR(bx-1,by-1,28,6,3,'rgba(28,24,40,0.85)',CO,0.7); uRR(bx,by,Math.max(2,26*G.charge),4,2,G.charge>0.75?'#7bd95a':'#ffd23a',null); }
         for(const f of G.fx){ U.globalAlpha=f.t>0.7?(1-f.t)/0.3:1; txt(f.txt,X(G.x),Y(G.y)-46-f.t*14,f.col,8,'center',true); U.globalAlpha=1; }
         // the lesson on the first hump, then a short reminder
-        if(G.phase==='ride'&&G.teach&&G.x>40){ const m=G.good?'That\'s it! Keep holding!':(isTouch()?'HOLD the screen on the yellow':'HOLD  '+keyName('a')+'  on the yellow'); U.font='bold 9px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=U.measureText(m).width+18; uRR(W/2-tw/2,24,tw,16,8,G.good?'#7bd95a':'#ffd23a',CO,1); txt(m,W/2,27.5,CO,9,'center',true); txt('The fuller the bar, the bigger the jump.',W/2,44,'#fff',6.5,'center',true); }
+        if(S.noHud){} else if(G.phase==='ride'&&G.teach&&G.x>40){ const m=G.good?'That\'s it! Keep holding!':(isTouch()?'HOLD the screen on the yellow':'HOLD  '+keyName('a')+'  on the yellow'); U.font='bold 9px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=U.measureText(m).width+18; uRR(W/2-tw/2,24,tw,16,8,G.good?'#7bd95a':'#ffd23a',CO,1); txt(m,W/2,27.5,CO,9,'center',true); txt('The fuller the bar, the bigger the jump.',W/2,44,'#fff',6.5,'center',true); }
         else if(G.phase==='ride'&&G.humps<4&&G.x<END){ const m=(isTouch()?'hold the screen':'hold '+keyName('a'))+' on the yellow: bigger jump'; U.font='5.5px "Trebuchet MS","Segoe UI",Verdana,sans-serif'; const tw=U.measureText(m).width+12; uRR(W/2-tw/2,Hh-11,tw,9.5,4.5,'rgba(28,24,40,0.8)',null); txt(m,W/2,Hh-9,'rgba(255,255,255,0.92)',5.5,'center'); }
-        box(3,3,62,13,'rgba(28,24,40,0.85)'); cubStar(11,9.5,3.6,'#ffd98a'); txt(G.stars+' / '+G.total,18,6,'#fff',7,'left',true);
+        if(!S.noHud){ box(3,3,62,13,'rgba(28,24,40,0.85)'); cubStar(11,9.5,3.6,'#ffd98a'); } txt(G.stars+' / '+G.total,18,6,'#fff',7,'left',true);
         box(W-78,3,75,13,'rgba(28,24,40,0.85)'); txt('AIR',W-73,7,'#a9a0b8',5.5); txt((G.airTotal+(G.gnd?0:G.air)).toFixed(1)+' s',W-8,6,'#ffd98a',7,'right',true);
-        const pw=Math.min(110,W-160); if(pw>36){ uRR(W/2-pw/2,7,pw,5,2.5,'rgba(28,24,40,0.7)',CO,0.7); uRR(W/2-pw/2,7,Math.max(4,pw*Math.min(1,G.x/END)),5,2.5,'#27a3a6',null); }
+        const pw=Math.min(110,W-160); if(pw>36&&!S.noHud){ uRR(W/2-pw/2,7,pw,5,2.5,'rgba(28,24,40,0.7)',CO,0.7); uRR(W/2-pw/2,7,Math.max(4,pw*Math.min(1,G.x/END)),5,2.5,'#27a3a6',null); }
         if(G.phase==='land'){ const m='Flew '+(G.dist/10).toFixed(1)+' ft'; txt(m,W/2,Hh*0.13,'#fff',11,'center',true); }
         if(G.cap) pgCaption(G.capWho||'Mom',G.cap);
       } };
@@ -385,7 +385,7 @@ async function parkOuting(){
   await say('Mom','The park! Let\'s go, just you and me.');
   await leaveHome(false); await fadeTo(1,600); setDown(); S.fadeText='Heredia Park'; S.fadeSub='A few blocks from home'; await wait(1800); S.fadeText=null; S.fadeSub=null;
   setMap('park'); n.visible=false; v.visible=false; g.visible=true; g.path=null; g.zBias=0;
-  P.sit=0; P.x=6*16+8; P.y=3*16+12; P.dir='down'; g.x=P.x+14; g.y=P.y-6; g.dir='down'; g.follow=true; S.bounds=null; S.noCollide=false; S.flags.parkDone=false; S.clock='10:15 AM';
+  P.sit=0; P.x=6*16+8; P.y=3*16+12; P.dir='down'; g.x=P.x+14; g.y=P.y-6; g.dir='down'; g.follow=true; S.bounds=null; S.noCollide=false; S.flags.parkDone=false; S.clock=S.chapter>=4?'1:50 PM':'10:15 AM';
   await fadeTo(0,600);
   await say('Mom','Go play! The big slides are up the stairs. Come find me at the picnic table when you want a snack.');
   setGoal('Play at the park. Picnic table = snack and home.',['pk_struct','pk_picnic']);

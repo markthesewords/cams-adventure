@@ -22,7 +22,7 @@ const H={
     if(!S.flags.spoon){ S.flags.spoon=true; blip(180,0.25,0.07,'sawtooth'); S.shake=0.25;
       await say('','Cam opens the cabinet. Pots! Pans! A lid rolls across the floor!');
       await say('','Down at the bottom, there\'s a wooden spoon.'); give('spoon');
-      if(NPC.nick.visible) await say('Dad','Aaand there go the pots. Keep the spoon, bud.');
+      if(NPC.nick.visible) await say('Dad','Aaand there go the pots. Keep the spoon, dude.');
     } else { blip(170,0.2,0.06,'sawtooth'); S.shake=0.15; await say('','Clang. Clang clang. CLANG.'); }
   },
   counter: async()=>{ await say('','The counter. Everything good is up there.'); },
@@ -37,6 +37,7 @@ const H={
   slider: async()=>{ await say('','The sliding door. The deck and the backyard are out there. Locked for now.'); },
   table: async()=>{ await say('','The dining table. Under it is a great fort.'); },
   shelves: async()=>{ await say('','Shelves full of stuff Cam isn\'t supposed to touch.'); },
+  dogbowl: async()=>{ await say('','Vinny\'s bowls. Water on top. The bottom one stays empty until 3 o\'clock.'); },
   cubbies: async()=>{ await say('','The cubbies. Shoes, books, baskets, and one lonely sock.'); },
   hooks: async()=>{ await say('','Coats and bags. Cam\'s little green coat is up there.'); },
   frontdoor: async()=>{ await say('','The front door. Outside is for later.'); },
@@ -65,7 +66,7 @@ const H={
   sparebed: async()=>{ await say('','The spare bed, with the purple checkered quilt.'); },
   npc_vinny: async()=>{ bubble(NPC.vinny,'*wag wag*'); await say('','Vinny leans his whole weight on Cam. Cam leans back.'); },
   npc_grace: async()=>{ await say('Mom','Hi, sweet boy.'); },
-  npc_nick: async()=>{ await say('Dad','Hey, bud.'); },
+  npc_nick: async()=>{ await say('Dad','Hey, little dude.'); },
 };
 function cribFront(on){
   const c=OBJ.cribRail;
@@ -109,7 +110,7 @@ function outfitPicker(){
         txt(isTouch()?'tap ◀ ▶ to look     tap the outfit to wear it':'◀ ▶ pick     '+keyName('a')+': wear it     '+keyName('b')+': never mind',cx,y+107,'#a9a0b8',6,'center'); } };
   });
 }
-const OUTFIT_LINES={pj:'Jammies. Bold choice for daytime.',dino:'Rawr. Dinosaur shirt it is.',jacket:'The puffy jacket. Are you cold, bud?',fuzzy:'The blue fuzzy suit. You look very soft.',orange:'The Halloween shirt. It\'s always Halloween somewhere.',sweats:'Packers sweats. Good man.',bibs:'Snow bibs. Inside. Okay.',cozy:'The cozy sweatshirt.',gold:'Go Pack Go.',polo:'Stripes. Very sharp.',vikes:'The Vikings jersey. ...Mom picked that one out.'};
+const OUTFIT_LINES={pj:'Jammies. Bold choice for daytime.',dino:'Rawr. Dinosaur shirt it is.',jacket:'The puffy jacket. Are you cold, little man?',fuzzy:'The blue fuzzy suit. You look very soft.',orange:'The Halloween shirt. It\'s always Halloween somewhere.',sweats:'Packers sweats. Good man.',bibs:'Snow bibs. Inside. Okay.',cozy:'The cozy sweatshirt.',gold:'Go Pack Go.',polo:'Stripes. Very sharp.',vikes:'The Vikings jersey. ...Mom picked that one out.'};
 function pickHelper(){
   const ok=e=>e.visible&&!e.follow&&!e.ghost&&!P.carry&&!e.inBath&&!e.away&&e!==S.doorHelper;
   const c=[]; if(ok(NPC.nick)&&!S.flags.nickPoop) c.push(NPC.nick); if(ok(NPC.grace)&&!S.cleaning) c.push(NPC.grace);
@@ -207,7 +208,7 @@ async function crib1(){
     bubble(P,'Mama!',1300); blip(900,0.12,0.05,'triangle'); await wait(1200);
     bubble(P,'Mamaaa!',1500); blip(980,0.18,0.06,'triangle'); await wait(1900);
     blip(1400,0.03,0.05,'square'); await wait(150);
-    S.glows.push([24,118,44,0.9,'rgba(120,170,255,0.25)']); noise(NOISE_VOL,3);
+    S.glows.push([24,118,40,0.5,'rgba(150,18,24,0.5)']); noise(NOISE_VOL,3);
     await say('','Click. Somewhere down the hall, Mom finds her phone without opening her eyes. The sound machine turns itself on.');
     await say('','Shhhhhhhhhhhhhhh.');
     setGoal('Snuggle Monkey and go back to sleep. ('+(isTouch()?'Press A':'Press Z or Space')+')');
@@ -257,11 +258,11 @@ CH[2]={
   npc_nick: async()=>{
     const n=NPC.nick, g=NPC.grace;
     if(S.flags.ch2done) return H.npc_nick();
-    if(!S.flags.vinnyAwake){ await say('Dad','Hey, buddy! Go wake up Vinny first. He\'s on his bed by the fireplace.'); return; }
+    if(!S.flags.vinnyAwake){ await say('Dad','Hey, dude! Go wake up Vinny first. He\'s on his bed by the fireplace.'); return; }
     if(!S.flags.metDad){
       S.flags.metDad=true; face(n,faceTo(n,P));
       bubble(P,'Dada!',1300); await wait(700);
-      await say('Dad','There he is! Good morning, buddy.');
+      await say('Dad','There he is! Good morning, little man.');
       await say('Dad','Daddy\'s just making a daddy breakfast drink.');
       bubble(n,'Heh heh heh.',1500); await wait(1300);
       if(g.path){ g.path=null; } g.x=tx(22); g.y=ty(4); g.dir='up'; g.moving=false;
@@ -270,7 +271,7 @@ CH[2]={
       await say('Dad','You hungry? Hop up on a stool and I\'ll get your breakfast.');
       face(n,'up');
       setGoal('Climb up on a bar stool for breakfast.',['stool0','stool1']);
-    } else await say('Dad','Stool, bud. Breakfast\'s coming.');
+    } else await say('Dad','Stool, dude. Breakfast\'s coming.');
   },
   stool: async(o)=>{ if(!S.flags.metDad||S.flags.ch2done) return H.stool(); await breakfast(o); },
   toys: async()=>{ if(!S.flags.toysOk||S.flags.dj) return H.toys(); await djScene(); },
@@ -335,19 +336,19 @@ async function breakfast(o){
   const CER=['A few Cheerios, one O at a time.','A little pinch of cereal. Two of them fall on the floor.','Three more O\'s. Crunch crunch crunch.'];
   while(eats<7){
     const c=await choose('What does Cam do?',['Eat some banana','Eat some cereal',water?'Drink some water':'Ask for water','Throw some to Vinny','Dump out the cereal','All done!']);
-    if(c===0){ eats++; st.banana++; bubble(P,'Nom',900); blip(300,0.05,0.04); await wait(700); await say('',BAN[nb++%3]); if(eats===2) await say('Dad','Good eating, bud.'); }
-    if(c===1){ if(st.cereal<=0){ await say('Dad','You dumped it, bud. ...Here\'s a little more.'); st.cereal=3; st.spill=false; }
+    if(c===0){ eats++; st.banana++; bubble(P,'Nom',900); blip(300,0.05,0.04); await wait(700); await say('',BAN[nb++%3]); if(eats===2) await say('Dad','Good eating, little dude.'); }
+    if(c===1){ if(st.cereal<=0){ await say('Dad','You dumped it, dude. ...Here\'s a little more.'); st.cereal=3; st.spill=false; }
       eats++; st.cereal--; bubble(P,'Crunch',900); blip(340,0.04,0.04); await wait(700); await say('',CER[nc++%3]); if(st.cereal<=0) st.cereal=1; }
     if(c===2){ if(!water){ water=true; bubble(P,'Water?',1200); await wait(900); st.cup=true; blip(420,0.05,0.05,'triangle'); await say('Mom','Water? Here\'s your cup, bud.'); bubble(P,'Tank you.',1300); await wait(1100); await say('Mom','Good manners!'); }
       else { eats++; bubble(P,'Glug glug',1000); await wait(800); await say('','Glug glug glug. Most of it goes in.'); } }
-    if(c===3){ fed++; await tossToVinny(fed);
-      if(fed===1) await say('Dad','Hey! That\'s people food... okay, it\'s a little bit of banana. Fine.');
-      else if(fed===2) await say('Dad','Again? He\'s never caught one in his life.');
+    if(c===3){ fed++;
+      if(fed===1){ await tossToVinny(1); await say('Dad','Hey! That\'s people food... okay, it\'s a little bit of banana. Fine.'); await say('Dad','He\'s never caught one in his life, anyway.');
+        await fadeTo(1,250); const pr=flingGame(mLevel('fling')); await fadeTo(0,250); const r=await pr; mPlayed('fling'); best('fling',r.score); if(r.catches>=5) award('pitcher'); await showBoard('fling','BREAKFAST FLING',r.score,r.catches+' caught'); S.mini=null; }
       else { await say('Mom','Alright, that\'s enough then!'); cut=true; break; } }
     if(c===4){ S.shake=0.2; blip(300,0.3,0.05,'sawtooth'); st.cereal=0; st.spill=true; await say('','The bowl tips. Cheerios everywhere. Vinny gets to work right away.'); bubble(v,'*crunch crunch*',1300); await wait(800); await say('Mom','Every. Single. Morning.'); }
-    if(c===5){ if(!eats){ await say('Dad','At least a couple bites, buddy. Try the banana.'); continue; } break; }
+    if(c===5){ if(!eats){ await say('Dad','At least a couple bites, little man. Try the banana.'); continue; } break; }
   }
-  if(!cut){ bubble(P,'All done!',1400); blip(900,0.1,0.05,'triangle'); await wait(1100); await say('Dad','All done? Nice work, bud.'); }
+  if(!cut){ bubble(P,'All done!',1400); blip(900,0.1,0.05,'triangle'); await wait(1100); await say('Dad','All done? Nice work, little dude.'); }
   else { await say('Dad','Breakfast is over, I guess.'); }
   jingle([523,659,784,659,784,1047],0.11,'triangle',0.06);
   S.flags.ch2done=true; save();
@@ -358,8 +359,32 @@ async function breakfast(o){
   await walk(g,[[o.x+30,o.y+26]],50); g.dir='down'; await wait(200);
   P.carry=null; P.lift=0; P.zBias=0; S.bounds=null; P.x=g.x; P.y=g.y+12; P.dir='down'; blip(300,0.05,0.04,'triangle'); S.noCollide=false;
   walk(v,[[P.x+22,P.y+4]],70).then(()=>{ v.dir='left'; });
-  await say('Mom','There. Now look at this counter.');
-  setGoal('');
+  // straight out for the walk, before it gets hot
+  await walk(n,[[tx(21),ty(7)],[tx(24),ty(7)],[P.x+18,P.y-6]],70); n.dir=faceTo(n,P);
+  await say('Dad','Hey Vinny! Wanna go for a walk?');
+  bubble(v,'!!!',1100); jingle([660,880,1100],0.06,'square',0.04); for(let i=0;i<8;i++){ v.dir=['down','left','up','right'][i%4]; await wait(90); }
+  bubble(P,'Walk!',1100); await wait(800);
+  await say('Mom','A walk! Let\'s get the stroller.');
+  await say('Dad','I\'ll grab Vinny\'s leash.');
+  setGoal(''); S.flags.foodSt={spill:!!st.spill}; S.flags.inWalk=true;
+  await leaveHome(true); await fadeTo(1,600); setDown(); await walkCore(); S.flags.inWalk=false;
+  S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='walk'; S.flags.amWalk=true; save('home');
+  await walkHome(st);
+}
+// home from the morning walk: Mom carries Cam in, Dad and Vinny right behind; the breakfast mess is still waiting
+async function walkHome(st){ const g=NPC.grace, n=NPC.nick, v=NPC.vinny;
+  S.chapter=2; S.clock='8:15 AM'; S.light='day'; S.goal=''; S.glows=[]; S.flags.ch2done=true; S.flags.metDad=true;
+  claim(g); claim(n); P.sit=0; P.sheet=camSheet(); S.noCollide=true; S.bounds=null; doors.cam=true;
+  if(!st){ st={banana:2,cereal:1,cup:true,spill:!!(S.flags.foodSt&&S.flags.foodSt.spill),y:OBJ.stool0.y+10}; foodOn(st); }
+  g.visible=true; g.path=null; g.zBias=0; g.x=FRONT[0]; g.y=FRONT[1]; g.dir='up'; P.carry=g; P.lift=9; P.zBias=3; P.x=g.x; P.y=g.y;
+  n.visible=true; n.path=null; n.zBias=0; n.x=FRONT[0]+14; n.y=FRONT[1]+10; n.dir='up'; v.visible=true; v.path=null; v.lie=false; v.sleep=false; v.follow=false; v.zBias=0; v.ghost=false; v.x=FRONT[0]-12; v.y=FRONT[1]+10; v.dir='up';
+  S.snapCam=true; S.fadeText=null; blip(260,0.12,0.06,'triangle'); await fadeTo(0,700);
+  await walk(g,[FRONT_IN],56); g.dir='left'; walk(v,[[FRONT_IN[0]-16,FRONT_IN[1]-10]],80).then(()=>{ v.dir='up'; }); walk(n,[[FRONT_IN[0]+16,FRONT_IN[1]-2]],60).then(()=>{ n.dir='left'; }); await wait(250);
+  setDown(); P.x=g.x-13; P.y=g.y+2; P.dir='right'; blip(300,0.05,0.04,'triangle'); await wait(300);
+  await say('Mom','Home! Good walk, everybody.');
+  await say('Dad','Nap\'s gonna come early today, I think.');
+  await say('Mom','Ugh. And look at that counter. It\'s still waiting for me.');
+  n.node=null; ambient(n);
   graceClean(st);
   vinnyRoutine();
 }
@@ -391,6 +416,7 @@ async function tossToVinny(k,what,col){ what=what||'banana'; col=col||'#f2d24a';
   await walk(v,[[lx-(v.x<lx?13:-13),ly+1]],120); bubble(v,'*chomp*',1000); blip(150,0.1,0.07); S.extra=S.extra.filter(e=>e!==it); await wait(800);
   await walk(v,[home],90); v.dir='left';
   await say('','The '+what+' sails right past Vinny\'s face. He finds it on the floor a second later.');
+  msDone('vinnyfood');
 }
 async function graceClean(st){
   const g=NPC.grace; S.cleaning=true;
@@ -440,6 +466,32 @@ function vinnyStop(){
   hidden.delete('slider'); hidden.add('sliderOpen'); S.doorHelper=null;
   g.node=null; ambient(g);
 }
+// ---------- Vinny moves around the couches on his own, in different positions ----------
+const VSPOTS=[
+  {sofa:'sofaTop',lx:380,ly:288,cx:376,cy:272,rot:0,dir:'left',pose:'arm'},
+  {sofa:'sofaTop',lx:395,ly:288,cx:395,cy:272,rot:0},
+  {sofa:'sofaTop',lx:410,ly:288,cx:414,cy:272,rot:0,dir:'right',pose:'arm'},
+  {sofa:'sofaBot',lx:386,ly:369,cx:382,cy:389,rot:0,dir:'left',pose:'arm'},
+  {sofa:'sofaBot',lx:400,ly:369,cx:400,cy:389,rot:0},
+  {sofa:'sofaBot',lx:414,ly:369,cx:418,cy:389,rot:0,dir:'right',pose:'arm'},
+  {sofa:'sofaLeft',lx:388,ly:318,cx:370,cy:318,rot:Math.PI/2,dir:'left',pose:'arm'},
+  {sofa:'sofaLeft',lx:388,ly:350,cx:370,cy:350,rot:Math.PI/2}];
+const VPOSES=['curl','sprawl','belly','sprawl','belly'];
+let VR={t:0,next:18,id:0};
+function vinRoamTick(dt){ const v=NPC.vinny; if(!v||S.chapter<3||(S.map&&S.map!=='house')||!v.visible||!v.lie||!v.sleep||v.path||v.follow||v.roam||!v.perch||S.cut||S.dlg||S.lock>0||(typeof MS!=='undefined'&&MS.mode)){ VR.t=0; return; }
+  VR.t+=dt; if(VR.t<VR.next) return; VR.t=0; VR.next=16+Math.random()*14; vinRoam(); }
+async function vinRoam(){ const v=NPC.vinny, id=++VR.id; v.roam=id; const cur=v.perch;
+  const opts=VSPOTS.filter(q=>!(cur&&q.sofa===cur.sofa&&Math.abs(q.cx-cur.cx)<4));
+  const sp=opts[Math.floor(Math.random()*opts.length)]; const ok=()=>v.roam===id&&!v.follow&&!S.cut;
+  try{
+    if(!sp) return;
+    v.lie=false; v.sleep=false; v.zBias=0; v.perch=null; blip(300,0.05,0.03,'triangle'); bubble(v,'*stretch*',900); await wait(900); if(!ok()||v.lie) return;
+    v.noBlock=true; let sy=v.y; for(const d of [0,3,6,9,12]) if(stepFree(v.x,v.y+d)){ sy=v.y+d; break; } const p=findPath(v.x,sy,sp.lx,sp.ly); v.noBlock=false; if(p&&sy!==v.y) p.unshift([v.x,sy]); if(!p){ v.lie=true; v.sleep=true; return; }
+    await walk(v,p.length?p:[[sp.lx,sp.ly]],46); if(!ok()||v.lie||Math.hypot(v.x-sp.lx,v.y-sp.ly)>6) return;
+    for(const d of ['up','left','down',sp.dir||(Math.random()<0.5?'left':'right')]){ v.dir=d; await wait(200); if(!ok()) return; }
+    await arcTo(v,sp.lx,sp.ly,6,240); if(!ok()) return;
+    v.x=sp.lx; v.y=sp.ly; v.perch={sofa:sp.sofa,lx:v.x,ly:v.y,cx:sp.cx,cy:sp.cy,rot:sp.rot,pose:sp.pose||VPOSES[Math.floor(Math.random()*VPOSES.length)]}; v.lie=true; v.sleep=true; blip(160,0.12,0.04,'triangle');
+  } finally { if(v.roam===id){ v.roam=0; if(!v.lie&&!v.path&&!v.follow&&!S.cut){ v.lie=true; v.sleep=true; } } } }
 async function vinnyRoutine(){
   const my=S.vinTok=(S.vinTok||0)+1, alive=()=>S.vinTok===my;
   const v=NPC.vinny, g=NPC.grace;
@@ -469,7 +521,7 @@ async function vinnyRoutine(){
     await wk(h,[DOOR_SIDE],58); h.dir='left';
     slider(true); await w(300); v.ghost=false; v.visible=true; v.dir='down';
     await wk(v,[DOOR_IN],60); slider(false);
-    bubble(h,'In or out, bud. Pick one.',1900); await w(scene?1800:800);
+    bubble(h,h===g?'In or out, bud. Pick one.':'In or out, dude. Pick one.',1900); await w(scene?1800:800);
     S.doorHelper=null; h.node=null; ambient(h);
   };
   try{
@@ -577,7 +629,7 @@ async function doorCry(){
   await say('','Mom settles in on the chaise. Cam climbs back up next to her, eyes locked on the TV.');
   await wait(2200);
   n.zBias=0; await walk(n,[[tx(26),ty(9)],[tx(28),ty(12)],[tx(28),ty(18)],[SX+26,312]],70); await arcTo(n,SX,312,3,220); n.dir='right'; n.zBias=90; n.noBlock=true;
-  await wait(700); await say('Dad','Scoot over, bud.');
+  await wait(700); await say('Dad','Scoot over, dude.');
   await wait(2600);
   S.fadeText='9:30 AM'; S.fadeSub=''; await fadeTo(1,3600); await wait(1200);
   S.mini=null; tvOn(false); S.chapter=3; save();
@@ -607,8 +659,8 @@ function tvOn(on){
 }
 // ----- Chapter 3: 9:30 AM -----
 CH[3]={
-  npc_nick: async()=>{ await say('Dad', S.flags.gotMom?'Have fun out there, bud.':'Go get Mom! Run!'); },
-  npc_grace: async()=>{ if(S.map==='park'){ await say('Mom','Go play, bud! I\'m right here.'); return; } if(S.flags.gotMom) return pickOuting(); },
+  npc_nick: async()=>{ await say('Dad', S.flags.gotMom?'Have fun out there, little man.':'Go get Mom! Run!'); },
+  npc_grace: async()=>{ if(S.map==='park'){ await say('Mom','Go play, bud! I\'m right here.'); return; } if(S.flags.gotMom){ await say('Mom',S.flags.amWalk?'Nap first, bud. Park or Cub after lunch.':'Go play, bud.'); return; } },
   npc_vinny: async()=>H.npc_vinny(),
 };
 async function chapter3(){
@@ -628,8 +680,10 @@ async function chapter3(){
   await say('','TV time is over. Nick is changing Cam again.');
   await say('Dad','Oh man, that was a RANK one!');
   bubble(P,'Hee hee hee!',1500); blip(1000,0.08,0.05,'triangle'); setTimeout(()=>blip(1150,0.08,0.05,'triangle'),140); await wait(1400);
-  await say('Dad','Alright. What do you want to wear, bud?');
-  { const id=await outfitPicker(); if(id&&id!==S.flags.outfit){ await swapOutfit(id); await say('Dad',OUTFIT_LINES[id]||'Very handsome.'); } else await say('Dad','Sticking with that one? Works for me.'); }
+  await say('Dad','Alright. What do you want to wear, little dude?');
+  { const id=await outfitPicker(); const wear=id||S.flags.outfit; await say('Dad','Okay. Arms up. ...Arms UP, dude.');
+    await fadeTo(1,250); const pr=dressGame(mLevel('dress'),wear); await fadeTo(0,250); const r=await pr; mPlayed('dress'); best('dress',r.score); if(r.perf>=5) award('dressed'); await showBoard('dress','GETTING DRESSED',r.score,r.perf+' perfect'); S.mini=null;
+    if(id&&id!==S.flags.outfit){ await swapOutfit(id); await say('Dad',OUTFIT_LINES[id]||'Very handsome.'); } else await say('Dad','Sticking with that one? Works for me.'); }
   await say('Dad','Ok, go get Mom!');
   P.carry=null; P.lift=0; P.zBias=0; P.x=n.x+14; P.y=n.y; P.dir='down'; blip(300,0.05,0.04,'triangle'); n.dir='right'; await wait(300);
   setGoal('Run to Mom!',['npc:grace']); n.node=null; ambient(n);
@@ -645,17 +699,21 @@ async function chapter3(){
   bubble(P,'No Vinny Vinny!',1600); await wait(1500);
   await walk(g,[spotNear([[4,22],[-18,16],[20,22],[-22,4],[0,-16]],v)],60); face(g,faceTo(g,P)); P.sit=0; P.dir=faceTo(P,g);
   S.flags.gotMom=true; setGoal('');
-  await pickOuting();
+  await say('Mom','Vinny! Okay, okay. Off him.');
+  await say('Mom','Somebody\'s yawning. Nap first, then this afternoon we\'ll go on an adventure. Park or Cub, your pick.');
+  S.clock='10:30 AM'; save();
+  NPC.grace.node=null; ambient(NPC.grace);
+  setGoal('Play in the house, or go to your crib for a nap.',['crib']);
   S.cut=false;
 }
 async function pickOuting(){
   const names=['Go for a walk','Go to Cub Foods','Go to the park','Not right now']; claim(NPC.grace);
-  const c=await choose(S.flags.outings?'Want to go on another adventure?':'Alright Cam, what should we do now?',names,'Mom');
-  if(c===3){ setGoal('Talk to Mom to pick an adventure.',['npc:grace']); NPC.grace.node=null; ambient(NPC.grace); return; }
+  const c=await choose('Want to go on another adventure?',names,'Mom');
+  if(c===3){ NPC.grace.node=null; ambient(NPC.grace); return; }
   claim(NPC.nick);
-  if(c===0){ await walkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='walk'; save('home'); await backHome(); return; }
-  if(c===1){ await cubOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didCub=true; S.flags.lastOut='cub'; save('home'); await backHome(); return; }
-  if(c===2){ await parkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.lastOut='park'; save('home'); await backHome(); return; }
+  if(c===0){ await walkOuting(); S.flags.outings=(S.flags.outings||0)+1; await pmBack(true); return; }
+  if(c===1){ await cubOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didCub=true; await pmBack(true); return; }
+  if(c===2){ await parkOuting(); S.flags.outings=(S.flags.outings||0)+1; S.flags.didPark=true; await pmBack(true); return; }
   await fadeTo(1,600); S.fadeText=names[c]; S.fadeSub='This adventure isn\'t built yet.'; await wait(2200); S.fadeText=null; S.fadeSub=null; await fadeTo(0,600);
   setGoal('Talk to Mom to pick an adventure.',['npc:grace']);
 }
@@ -677,7 +735,7 @@ async function backHome(){
   setDown(); P.x=g.x-13; P.y=g.y+2; P.dir='right'; blip(300,0.05,0.04,'triangle'); await wait(300);
   await say('Mom','Home again. Go play, bud.');
   g.node=null; n.node=null; ambient(g); ambient(n);
-  setGoal('Talk to Mom for another adventure, or go to your crib for a nap.',['npc:grace','crib']);
+  setGoal('Play in the house, or go to your crib for a nap.',['crib']);
 }
 // ====== boot ======
 // ---------- a taste of the fun before the day begins (first time only) ----------
@@ -689,7 +747,12 @@ function couchDream(sec){ return new Promise(resolve=>{ const G={t:0,hearts:[],g
     uRR(-10,-27+b,20,26,6,o.top,CO,1); uLimb([[-9,-22+b],[-12-(o.armL||0),-8+b]],4.6,o.sleeve||o.top); uLimb([[9,-22+b],[12+(o.armR||0),-8+b]],4.6,o.sleeve||o.top);
     if(o.longHair){ uRR(-10.8,-45+b,21.6,17,7,o.hair,hexShade(o.hair,-0.3),0.6); uRR(-11.5,-34+b,4.5,12,2.2,o.hair,null); uRR(7,-34+b,4.5,12,2.2,o.hair,null); }
     uCirc(0,-36+b,9,o.skin,CO,1);
-    U.fillStyle=o.hair; U.beginPath(); U.arc(0,-37.5+b,9.4,Math.PI*1.02,Math.PI*1.98); U.quadraticCurveTo(o.part||3,-41+b,-9.3,-37+b); U.closePath(); U.fill(); U.strokeStyle=hexShade(o.hair,-0.3); U.lineWidth=0.5; U.stroke();
+    if(o.beanie){ // black beanie pulled down to the brows, folded cuff, no top knot
+      U.fillStyle='#1d1b22'; U.beginPath(); U.arc(0,-37+b,9.8,Math.PI,0); U.lineTo(9.8,-35.5+b); U.lineTo(-9.8,-35.5+b); U.closePath(); U.fill(); U.strokeStyle=CO; U.lineWidth=0.8; U.stroke();
+      U.fillStyle='#2c2a33'; U.fillRect(-10.2,-39+b,20.4,4); U.strokeRect(-10.2,-39+b,20.4,4);
+      U.strokeStyle='rgba(255,255,255,0.12)'; U.lineWidth=0.6; for(let i=-8;i<=8;i+=2){ U.beginPath(); U.moveTo(i,-38.5+b); U.lineTo(i,-35.5+b); U.stroke(); }
+      U.beginPath(); U.arc(-2,-41+b,6,Math.PI*1.15,Math.PI*1.45); U.stroke(); }
+    else { U.fillStyle=o.hair; U.beginPath(); U.arc(0,-37.5+b,9.4,Math.PI*1.02,Math.PI*1.98); U.quadraticCurveTo(o.part||3,-41+b,-9.3,-37+b); U.closePath(); U.fill(); U.strokeStyle=hexShade(o.hair,-0.3); U.lineWidth=0.5; U.stroke(); }
     if(o.wisp){ U.strokeStyle=o.hair; U.lineWidth=1; U.beginPath(); U.moveTo(1,-45.5+b); U.quadraticCurveTo(4,-49+b,6,-46.5+b); U.stroke(); }
     if(o.beard){ U.fillStyle=o.beard; U.beginPath(); U.arc(0,-34+b,8.6,0.15,Math.PI-0.15); U.quadraticCurveTo(0,-31+b,8.4,-32.7+b); U.fill(); }
     U.strokeStyle=CO; U.lineWidth=1; U.lineCap='round'; for(const ex of [-3.4,3.4]){ U.beginPath(); U.arc(ex,-36.5+b,1.7,Math.PI*1.1,Math.PI*1.9); U.stroke(); }
@@ -716,21 +779,32 @@ function couchDream(sec){ return new Promise(resolve=>{ const G={t:0,hearts:[],g
         uCirc(vx-23,vy-10,10,'#33211c',CO,1.1); uPoly([[vx-32,vy-15],[vx-34,vy-5],[vx-28,vy-11]],'#120c0b',CO,0.8); uPoly([[vx-15,vy-17],[vx-12,vy-7],[vx-18,vy-12]],'#120c0b',CO,0.8);
         uRR(vx-29,vy-9,12,9,4,'#120c0b',CO,0.9); uCirc(vx-23,vy-7,1.6,'#3a2a26',null); U.strokeStyle='#d8c8b8'; U.lineWidth=0.9; for(const ex of [-27,-19]){ U.beginPath(); U.arc(vx+ex,vy-12.5,1.6,Math.PI*0.1,Math.PI*0.9); U.stroke(); } }
       const of=OUTFITS.find(q=>q[0]===S.flags.outfit)||OUTFITS[1];
-      person(x0+cw*0.19,sy,1.12,{ph:0,pants:'#4a5a7a',shoe:'#e8e4dc',top:'#24222a',sleeve:'#2c2a33',skin:'#eec4a4',hair:'#5a4030',beard:'rgba(90,64,48,0.85)',armR:4,part:-2});
+      person(x0+cw*0.19,sy,1.12,{ph:0,pants:'#4a5a7a',shoe:'#e8e4dc',top:'#24222a',sleeve:'#2c2a33',skin:'#eec4a4',hair:'#5a4030',beanie:true,beard:'rgba(90,64,48,0.85)',armR:4,part:-2});
       person(x0+cw*0.52,sy,1.0,{ph:1.3,pants:'#5a78b0',shoe:'#d8c8e8',top:'#34313f',skin:'#f2caa8',hair:'#6a4630',longHair:true,armL:4,armR:6,cheek:true});
       person(x0+cw*0.355,sy+3,0.72,{ph:2.4,leg:13,pants:'#7a8ec8',shoe:'#f4f0e8',top:'#f0c84a',skin:'#f6d0b4',hair:'#e6c878',wisp:true,cheek:true,hop:G.gig>0?Math.abs(Math.sin(G.gig*18))*3:0,part:1});
       uRR(x0,sy-22,15,42,7,'#5d7a76',CO,1.3); uRR(x0+cw-15,sy-22,15,42,7,'#5d7a76',CO,1.3);
       for(const h of G.hearts){ const a=Math.max(0,1-h.t/2.2), x=h.x+Math.sin(h.t*3+h.x)*4, r=3; U.globalAlpha=a; U.fillStyle='#f08aa8'; U.beginPath(); U.moveTo(x,h.y+r); U.bezierCurveTo(x-r*2,h.y-r*0.6,x-r*0.6,h.y-r*1.8,x,h.y-r*0.5); U.bezierCurveTo(x+r*0.6,h.y-r*1.8,x+r*2,h.y-r*0.6,x,h.y+r); U.fill(); U.globalAlpha=1; } } }; }); }
-async function dreams(){
-  await dreamCut(async()=>{ slideBig({humps:1}); },true);
+// the dreams are a preview of the day: they play themselves, a little faster, while the player watches
+function dreamDrive(kind){ let t0=performance.now(), last=0, k=0;
+  if(kind==='slide') return ()=>{ K.a=true; };
+  if(kind==='cub') return ()=>{ const G=S.mini&&S.mini.G; if(!G||!G.reqs) return; const n=performance.now(); if(n-last<150) return; last=n;
+    if(G.talk){ pressed.a=true; return; } if(G.guide){ pressed[G.guide.it.side?'right':'left']=true; return; }
+    const it=(G.items||[]).find(x=>x.state==='on'&&x.kind==='mom'&&G.reqs.includes(x.id)&&x.p>0.8&&x.p<0.9); if(it) pressed[it.side?'right':'left']=true; };
+  if(kind==='drums') return ()=>{ const n=performance.now(); if(n-t0<500||n-last<300) return; last=n; pressed[['down','left','down','b','down','left'][k++%6]]=true; };
+  if(kind==='couch') return ()=>{ const n=performance.now(); if(n-t0<600||n-last<1100) return; last=n; pressed.a=true; };
+  return null; }
+async function dreams(){ dreamMusic(true); const tag=n=>{ S.dreamTag=n?{name:n,t0:DR.t}:null; };
+  await dreamCut(async()=>{ S.auto=dreamDrive('slide'); S.noHud=true; tag('The Big Slide'); slideBig({humps:1}); },true);
   await new Promise(r=>{ const iv=setInterval(()=>{ const G=S.mini&&S.mini.G; if(!S.mini||!S.mini.slideBig||(G&&G.phase==='land'&&G.pT>1.2)){ clearInterval(iv); r(); } },80); });
-  let pr; await dreamCut(async()=>{ S.mini=null; pr=cubGame(0,{dream:2}); },true); await pr;
-  await dreamCut(async()=>{ S.mini=null; pr=drumGame({dream:4}); },true); await pr;
-  await dreamCut(async()=>{ S.mini=null; pr=couchDream(5.5); },true); await pr;
-  await dreamCut(async()=>{ S.mini=null; },false,false); }
+  let pr; await dreamCut(async()=>{ S.mini=null; S.auto=dreamDrive('cub'); tag('Cub Foods'); pr=cubGame(0,{dream:2}); },true); await pr;
+  await dreamCut(async()=>{ S.mini=null; S.auto=dreamDrive('drums'); tag('The Drums'); pr=drumGame({dream:4}); },true); await pr;
+  await dreamCut(async()=>{ S.mini=null; S.auto=dreamDrive('couch'); tag(null); pr=couchDream(5.5); },true); await pr;
+  dreamMusic(false);
+  await dreamCut(async()=>{ S.mini=null; S.auto=null; S.noHud=false; tag(null); S.rawTap=null; },false,false); }
 // ---------- mini games from the title screen: each one opens once it has been played in the story ----------
 const ARCADE=[{id:'dj',name:'The DJ Song',where:'Morning',col:'#46c8be'},{id:'walk',name:'The Walk',where:'Outing',col:'#8fd0f0'},{id:'park',name:'Heredia Park',where:'Outing',col:'#7bd95a'},{id:'cub',name:'Cub Foods',where:'Outing',col:'#e8845a'},
-  {id:'guitar',name:'Dad\'s Guitar',where:'Basement',col:'#c8242c'},{id:'bed',name:'Bed Jumping',where:'Basement',col:'#b48ae0'},{id:'cube',name:'Activity Cube',where:'Basement',col:'#f0c828'},{id:'drums',name:'The Drums',where:'Basement',col:'#ffd98a'}];
+  {id:'guitar',name:'Dad\'s Guitar',where:'Basement',col:'#c8242c'},{id:'bed',name:'Bed Jumping',where:'Basement',col:'#b48ae0'},{id:'cube',name:'Activity Cube',where:'Basement',col:'#f0c828'},{id:'drums',name:'The Drums',where:'Basement',col:'#ffd98a'},
+  {id:'fling',name:'Breakfast Fling',where:'Breakfast',col:'#7bd95a'},{id:'dress',name:'Getting Dressed',where:'9:30 AM',col:'#6a9ae0'},{id:'tread',name:'Treadmill',where:'Basement',col:'#9aa0a8'},{id:'feed',name:'Feeding Time',where:'3:00 PM',col:'#c98a2c'}];
 function arcOpen(id){ const sv=loadSave(), u=META.unl||{}; return !!(u[id]||META.best[id]||(id==='guitar'&&META.ach.strum)||(id==='dj'&&sv&&sv.ch>=3)||(id==='park'&&(META.ach.slide1||META.ach.slide2))); }
 function arcMenu(LIST,title,all){ LIST=LIST||ARCADE; return new Promise(res=>{ let sel=0, msg='', msgT=0; const t0=S.t;
   const lay=()=>{ const cols=VW>=300?4:2, rows=Math.ceil(LIST.length/cols), w=Math.floor((VW-12-(cols-1)*4)/cols), h=Math.min(52,Math.floor((VH-58-(rows-1)*(LIST.length>12?2:4))/rows)); return {cols,w,h,at:i=>[6+(i%cols)*(w+4),28+Math.floor(i/cols)*(h+(LIST.length>12?2:4))]}; };
@@ -755,20 +829,24 @@ async function arcPlay(id){
     if(id==='bigslide'){ const pr=slideBig(); await fadeTo(0,250); await pr; }
     if(id==='curly'){ const pr=slideCurly(); await fadeTo(0,250); await pr; }
     if(id==='couch'){ const pr=couchDream(8); await fadeTo(0,250); await pr; }
+    if(id==='fling'){ const pr=flingGame(mLevel('fling')); await fadeTo(0,250); const r=await pr; mPlayed('fling'); best('fling',r.score); if(r.catches>=5) award('pitcher'); await showBoard('fling','BREAKFAST FLING',r.score,r.catches+' caught'); }
+    if(id==='dress'){ const pr=dressGame(mLevel('dress'),S.flags.outfit); await fadeTo(0,250); const r=await pr; mPlayed('dress'); best('dress',r.score); if(r.perf>=5) award('dressed'); await showBoard('dress','GETTING DRESSED',r.score,r.perf+' perfect'); }
+    if(id==='tread'){ const pr=treadGame(mLevel('tread')); await fadeTo(0,250); const r=await pr; mPlayed('tread'); best('tread',r.score); if(!r.flew) award('runner'); await showBoard('tread','TREADMILL',r.score,r.feet+' ft'); }
+    if(id==='feed'){ await feedArcade(); }
     if(id==='dream'){ S.fade=0; S.fadeText=null; setMap('house'); P.visible=false; await dreams(); P.visible=true; }
     S.mini=null; S.rawTap=null; }
 // ---------- developer mode: hidden. Open the link with #dev, type "camdev", or tap Cam's face badge five times fast ----------
-const DEV_LIST=[{id:'ch1',name:'5:30 AM + dreams',col:'#8fd0f0'},{id:'ch2',name:'7:00 AM',col:'#8fd0f0'},{id:'ch3',name:'9:30 AM outings',col:'#8fd0f0'},{id:'walk',name:'Outing: walk',col:'#7bd95a'},{id:'park',name:'Outing: park',col:'#7bd95a'},{id:'cub',name:'Outing: Cub',col:'#7bd95a'},{id:'nap',name:'Home after outing',col:'#7bd95a'},
+const DEV_LIST=[{id:'ch1',name:'5:30 AM + dreams',col:'#8fd0f0'},{id:'ch2',name:'7:00 AM',col:'#8fd0f0'},{id:'ch3',name:'9:30 AM',col:'#8fd0f0'},{id:'walk',name:'Outing: walk',col:'#7bd95a'},{id:'park',name:'Outing: park',col:'#7bd95a'},{id:'cub',name:'Outing: Cub',col:'#7bd95a'},{id:'nap',name:'Home after outing',col:'#7bd95a'},
   {id:'pm',name:'1:30 PM',col:'#f0c828'},{id:'bsmt',name:'Basement',col:'#f0c828'},{id:'emory',name:'Emory arrives',col:'#f0c828'},{id:'yard',name:'Backyard',col:'#f0c828'},
   {id:'g-dream',name:'Game: dreams',col:'#e0a8f0'},{id:'g-couch',name:'Game: couch',col:'#e0a8f0'},{id:'g-dj',name:'Game: DJ song',col:'#e8845a'},{id:'g-walk',name:'Game: walk',col:'#e8845a'},{id:'g-park',name:'Game: playground',col:'#e8845a'},{id:'g-bigslide',name:'Game: big slide',col:'#e8845a'},{id:'g-curly',name:'Game: curly slide',col:'#e8845a'},{id:'g-cub',name:'Game: Cub Foods',col:'#e8845a'},
-  {id:'g-guitar',name:'Game: guitar',col:'#ffd98a'},{id:'g-bed',name:'Game: bed jump',col:'#ffd98a'},{id:'g-cube',name:'Game: cube',col:'#ffd98a'},{id:'g-drums',name:'Game: drums',col:'#ffd98a'},{id:'unlock',name:'Unlock all mini games',col:'#c8c0d8'},{id:'hide',name:'Hide dev mode',col:'#c8c0d8'}];
+  {id:'g-guitar',name:'Game: guitar',col:'#ffd98a'},{id:'g-bed',name:'Game: bed jump',col:'#ffd98a'},{id:'g-cube',name:'Game: cube',col:'#ffd98a'},{id:'g-drums',name:'Game: drums',col:'#ffd98a'},{id:'g-fling',name:'Game: fling',col:'#e86aa0'},{id:'g-dress',name:'Game: dressed',col:'#e86aa0'},{id:'g-tread',name:'Game: treadmill',col:'#e86aa0'},{id:'g-feed',name:'Game: feeding',col:'#e86aa0'},{id:'unlock',name:'Unlock all mini games',col:'#c8c0d8'},{id:'hide',name:'Hide dev mode',col:'#c8c0d8'}];
 function devOn(){ try{ return localStorage.getItem('cam_dev')==='1'; }catch(e){ return false; } }
 function devWarp(id){ try{ sessionStorage.setItem('cam_warp',id); }catch(e){} location.hash=''; location.reload(); }
 async function devMenu(){ S.cut=true; for(const k in NPC) NPC[k].visible=false;
   while(true){ S.fade=0; const id=await arcMenu(DEV_LIST,'DEVELOPER WARP',true); if(!id){ location.hash=''; location.reload(); return; }
     if(id==='hide'){ try{ localStorage.removeItem('cam_dev'); }catch(e){} location.hash=''; location.reload(); return; }
     if(id==='unlock'){ META.unl=META.unl||{}; for(const a of ARCADE) META.unl[a.id]=1; saveMeta(); jingle([659,784,1047],0.07,'triangle',0.05); continue; }
-    if(id.indexOf('g-')===0){ P.sheet=camSheet(); await fadeTo(1,200); await arcPlay(id.slice(2)); S.fadeText=null; S.fadeSub=null; S.goal=''; S.targets=[]; DR.on=false; DR.w=0; document.body.classList.remove('dream'); continue; }
+    if(id.indexOf('g-')===0){ P.sheet=camSheet(); await fadeTo(1,200); await arcPlay(id.slice(2)); S.fadeText=null; S.fadeSub=null; S.goal=''; S.targets=[]; DR.on=false; DR.w=0; S.auto=null; S.noHud=false; S.dreamTag=null; dreamMusic(false); document.body.classList.remove('dream'); continue; }
     devWarp(id); return; } }
 async function arcade(){ let played=false; S.cut=true; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=false;
   while(true){ S.fade=0; const id=await arcMenu(); if(!id) break; played=true; await fadeTo(1,250);
@@ -776,7 +854,7 @@ async function arcade(){ let played=false; S.cut=true; P.sheet=camSheet(); for(c
     S.mini=null; S.fadeText=null; S.fadeSub=null; S.goal=''; S.targets=[]; }
   S.cut=false; return played; }
 // save points inside a chapter, and what the title screen calls them
-const SAVE_PT={ home:f=>'back from '+({walk:'the walk',cub:'Cub Foods',park:'the park'}[f.lastOut]||'the outing'), lunch:f=>'lunch', daddy:f=>'after lunch',
+const SAVE_PT={ home:f=>'home from the walk', lunch:f=>'lunch', pmout:f=>'the afternoon adventure', daddy:f=>'after lunch',
   bs:f=>{ const n=Object.keys(f.bs||{}).filter(k=>f.bs[k]).length; return n>=3?'the drums':'the basement ('+n+' of 3 toys)'; }, yard:f=>'the backyard' };
 async function boot(){
   let HASH=location.hash; try{ const w=sessionStorage.getItem('cam_warp'); if(w){ sessionStorage.removeItem('cam_warp'); HASH='#'+w; } }catch(e){}
@@ -786,9 +864,9 @@ async function boot(){
   S.titleSub = sv&&sv.pt&&SAVE_PT[sv.pt] ? 'Saved: '+SAVE_PT[sv.pt](sv.flags||{}) : sv&&sv.ch>=6 ? 'Saved: Emory is here' : sv&&sv.ch>=5 ? 'Saved: the basement' : sv&&sv.ch>=4 ? 'Saved: 1:30 PM' : sv&&sv.ch>=3 ? 'Saved: 9:30 AM' : sv&&sv.ch>=2 ? 'Saved: 7:00 AM' : '';
   await new Promise(r=>S.titleRes=r); S.titleRes=null; audioKick();
   S.title=false;
-  if(HASH==='#dev'){ await devMenu(); return; }
+  if(HASH==='#dev'||S.devGo){ S.devGo=false; await devMenu(); return; }
   let fresh=false; if(HASH==='#ch1'){ HASH=''; fresh=true; S.dreamFirst=true; }
-  if(HASH==='#ch2'||HASH==='#ch3'){ S.inv=[]; S.flags={ch1done:true}; if(HASH==='#ch3'){ S.flags.ch2done=true; S.flags.dj=true; await chapter3(); } else await chapter2(); return; }
+  if(HASH==='#ch2'||HASH==='#ch3'){ S.inv=[]; S.flags={ch1done:true}; if(HASH==='#ch3'){ S.flags.ch2done=true; S.flags.dj=true; S.flags.amWalk=true; S.flags.outings=1; await chapter3(); } else await chapter2(); return; }
   if(!HASH&&!fresh){ while(true){ const n=ARCADE.filter(a=>arcOpen(a.id)).length; const c=await choose('',[sv&&sv.ch>=2?'Play the story':'Start the day','Mini games   '+n+' of '+ARCADE.length].concat(devOn()?['Developer warp']:[])); if(c===0) break; if(c===2){ await devMenu(); return; } const played=await arcade(); if(played){ location.reload(); return; } }
     S.dreamFirst=true; }
   if(sv&&sv.ch>=2&&!fresh&&!HASH){ const f=sv.flags||{}, list=[];   // newest first: the exact save point, then every major event and time of day ever reached
@@ -799,16 +877,17 @@ async function boot(){
     if(h.drums) list.push(['The drums','drums']);
     if(h.ch>=5) list.push(['The basement','ch5']);
     if(h.ch>=5||h.ps>=4) list.push(['After lunch','daddy']);
+    if(h.ch>=5||h.ps>=3.5) list.push(['Park or Cub (after lunch)','pmout']);
     if(h.ch>=5||h.ps>=2) list.push(['Lunch','lunch']);
     if(h.ch>=4) list.push(['1:30 PM (nap is over)','ch4']);
-    if(h.ch>=4||h.out) list.push(['Home after the outing','home']);
+    if(h.ch>=4||h.out) list.push(['Home from the walk','home']);
     if(h.ch>=3) list.push(['9:30 AM','ch3']);
     list.push(['7:00 AM','ch2'],['New game','new']);
     const c=await choose('Start where?',list.map(q=>q[0])); let pick=list[c][1];
     if(pick!=='new'){ S.inv=sv.inv||[]; const exact=pick==='pt'; if(exact) pick=sv.pt;
       S.flags=exact?Object.assign({},f,{ch1done:true}):{ch1done:true,outfit:f.outfit}; const F=S.flags;
-      if(pick!=='ch2'){ F.ch2done=true; F.dj=true; }
-      if(!['ch2','ch3'].includes(pick)){ F.outings=F.outings||1; F.gotMom=true; if(!S.inv.includes('monkey')) S.inv.push('monkey'); }
+      if(pick!=='ch2'){ F.ch2done=true; F.dj=true; F.amWalk=true; F.outings=F.outings||1; }
+      if(!['ch2','ch3','home'].includes(pick)){ F.outings=F.outings||1; F.gotMom=true; if(!S.inv.includes('monkey')) S.inv.push('monkey'); }
       if(['ch5','bs','drums','ch6','yard'].includes(pick)) F.pmStage=6;
       if(pick==='ch6'||pick==='yard') F.bsDone=true;
       if(pick==='yard'){ S.chapter=6; S.clock='4:00 PM'; S.tick=null; S.hud=null; P.sheet=camSheet(); S.cut=true; S.fade=1; await toYard(); if(S.fade>0) await fadeTo(0,500); S.cut=false; }
@@ -818,8 +897,9 @@ async function boot(){
       else if(pick==='ch5'){ for(const k in NPC) NPC[k].visible=true; S.cut=true; S.fade=1; await chapter5(); S.cut=false; }
       else if(pick==='daddy') await resumeDaddy();
       else if(pick==='lunch') await resumeLunch();
+      else if(pick==='pmout') await resumePmOut();
       else if(pick==='ch4') await chapter4();
-      else if(pick==='home'){ S.chapter=3; S.clock='9:30 AM'; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=true; for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id); doors.cam=true; S.cut=true; S.fade=1; save('home'); await backHome(); S.cut=false; }
+      else if(pick==='home'){ F.ch2done=true; F.dj=false; F.amWalk=true; F.outings=1; F.gotMom=false; S.chapter=2; P.sheet=camSheet(); S.cut=true; S.fade=1; await walkHome(null); S.cut=false; }
       else if(pick==='ch3') await chapter3(); else await chapter2();
       return; } }
   if(['#walk','#park','#nap','#pm'].includes(HASH)){ S.chapter=3; S.clock='9:30 AM'; S.flags={gotMom:true,outings:1}; S.inv=['monkey']; P.sheet=camSheet(); for(const k in NPC) NPC[k].visible=true; for(const o of DATA.objs) if(o.id.startsWith('sc_')) hidden.delete(o.id); doors.cam=true; S.cut=true;

@@ -311,7 +311,7 @@ async function walkCore(){ S.fadeText='The Walk'; S.fadeSub='Around the block: P
   G.ryanBack=true; while(G.ryanK>0) await wait(60); await wait(500);
   const high=G.score>=WALK.HIGH;
   if(high){ G.surprise=true;
-    await say('Dad','You were such a good walker today, bud. Want to walk Vinny the rest of the way?');
+    await say('Dad','You were such a good walker today, little dude. Want to walk Vinny the rest of the way?');
     bub('cam','Yeah!',1.4); await wait(900); G.camOut=true; blip(300,0.05,0.04,'triangle');
     await say('','Cam climbs out and takes the leash in both hands. Vinny, for once in his life, walks slowly.');
     G.phase='camwalk'; }

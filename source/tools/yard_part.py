@@ -123,4 +123,48 @@ def slide(q):
     for i in range(3): q.rectangle([0,6+i*5,8,9+i*5],fill=REDD,outline=OUT)                                               # ladder on the west side
     q.rectangle([9,12,11,22],fill=REDD); q.rectangle([23,12,25,18],fill=REDD)
 yadd('slide',PK.spr(42,42,slide),ypx(126)-20,ypy(216)-22,solid=[ypx(126)-12,ypy(216)-12,28,24],interact='y_slide')
+# ---- patio: pellet smoker, grill, downspout; deck: chairs and glass side tables (placed from Nick's screenshots) ----
+BLK=(30,30,36,255); BLKL=(70,70,80,255); STL=(150,154,160,255); STLD=(110,114,122,255)
+def smoker(q):   # pellet smoker seen from above: hopper on the north end, long barrel lid, chimney, side shelf
+    q.rectangle([2,0,15,11],fill=BLK,outline=OUT); q.rectangle([4,2,13,5],fill=BLKL); q.rectangle([6,8,11,9],fill=STL)              # hopper with lid
+    q.rounded_rectangle([0,11,17,47],radius=6,fill=BLK,outline=OUT); q.line([(3,15),(3,43)],fill=BLKL); q.line([(9,14),(9,44)],fill=(48,48,56,255))
+    q.rectangle([15,24,17,34],fill=STL,outline=OUT)                                                                                          # lid handle
+    q.ellipse([10,38,15,43],fill=STLD,outline=OUT); q.point((12,40),fill=(20,20,24,255))                                                     # chimney
+yadd('smoker',PK.spr(18,48,smoker),112,520,solid=[112,528,18,40])
+def grill(q):    # gas grill from above: lid, handle, two side shelves
+    q.rectangle([0,4,9,13],fill=STL,outline=OUT); q.rectangle([39,4,48,13],fill=STL,outline=OUT)
+    for x in (2,5): q.line([(x,6),(x,11)],fill=STLD)
+    q.rounded_rectangle([9,0,39,15],radius=4,fill=BLK,outline=OUT); q.line([(12,3),(36,3)],fill=BLKL); q.rectangle([13,13,35,15],fill=STL,outline=OUT)
+    q.ellipse([42,6,46,10],fill=(196,60,48,255),outline=OUT)                                                                               # propane knob
+yadd('grill',PK.spr(49,16,grill),119,586,solid=[119,589,49,13])
+def spout(q):    # downspout coming off the house corner, its extension lying on the patio edge
+    q.rectangle([0,0,4,30],fill=(232,228,218,255),outline=OUT); q.line([(2,2),(2,27)],fill=(206,202,192,255)); q.rectangle([0,27,5,31],fill=(212,208,198,255),outline=OUT)
+yadd('spout',PK.spr(6,32,spout),110,576,solid=[109,578,6,30])
+def spout_down(q):   # knocked into the grass at an angle
+    q.polygon([(0,6),(26,0),(28,4),(2,10)],fill=(232,228,218,255),outline=OUT); q.line([(3,7),(25,2)],fill=(206,202,192,255)); q.rectangle([25,0,30,6],fill=(212,208,198,255),outline=OUT)
+yadd('spoutDown',PK.spr(31,11,spout_down),80,590,solid=None,flat=True)
+MESH=(130,92,62,255); MESHD=(104,72,48,255)
+def chair(face):
+    def f(q):
+        q.rectangle([1,1,13,13],fill=MESH,outline=BLK)
+        for i in range(3,13,3): q.line([(2,i),(12,i)],fill=MESHD); q.line([(i,2),(i,12)],fill=MESHD)
+        back={'down':[0,0,14,2],'up':[0,12,14,14],'right':[0,0,2,14],'left':[12,0,14,14]}[face]; q.rectangle(back,fill=BLK)
+        if face in('down','up'): q.line([(0,1),(0,13)],fill=BLK); q.line([(14,1),(14,13)],fill=BLK)
+        else: q.line([(1,0),(13,0)],fill=BLK); q.line([(1,14),(13,14)],fill=BLK)
+    return PK.spr(15,15,f)
+def gtable(q):
+    q.ellipse([0,0,10,10],fill=(150,200,222,255),outline=BLK); q.ellipse([2,2,8,8],outline=(190,226,240,255)); q.line([(3,3),(5,2)],fill=(240,250,255,255))
+def planter(q):   # wooden raised garden stand: mostly dirt, a few plants
+    W_,H_=95,21; q.rectangle([0,0,W_-1,H_-1],fill=(150,104,62,255),outline=OUT); q.rectangle([3,3,W_-4,H_-4],fill=(96,66,44,255),outline=(104,70,40,255))
+    for x in range(6,W_-6,7):
+        for y in (5,9,13): q.point((x+(y%3),y),fill=(120,86,58,255))
+    for x in range(24,W_,24): q.line([(x,0),(x,H_-1)],fill=(118,80,46,255))
+    for (px_,py_,c) in [(14,9,(84,150,62,255)),(37,12,(96,164,70,255)),(61,8,(72,138,56,255)),(80,12,(104,170,74,255))]:
+        q.ellipse([px_-3,py_-3,px_+3,py_+3],fill=c,outline=(52,96,40,255)); q.point((px_,py_-1),fill=(150,206,110,255))
+    q.ellipse([47,10,50,13],fill=(214,84,64,255))
+yadd('planter',PK.spr(95,21,planter),296,500,solid=[296,500,95,21])
+for i,(cx,cy,face) in enumerate([(403,511,'down'),(497,527,'left'),(390,597,'up'),(496,587,'left')]):
+    yadd('chair%d'%i,chair(face),cx-7,cy-7,solid=[cx-6,cy-4,13,10])
+for i,(cx,cy) in enumerate([(419,503),(480,505),(362,595),(494,603)]):
+    yadd('gtable%d'%i,PK.spr(11,11,gtable),cx-5,cy-5,solid=[cx-4,cy-3,9,7])
 y_solid=[[0]*YW for _ in range(YH)]

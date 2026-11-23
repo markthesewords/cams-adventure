@@ -237,6 +237,7 @@ badd('tread',blk(22,62,(50,50,56,255),(30,30,34,255),fh=4,lines=lambda dd:dd.rec
 badd('sshelf',blk(14,60,(200,180,150,255),(150,130,100,255),fh=4,lines=lambda dd:[dd.rectangle([2,4+i*9,11,10+i*9],fill=((200,80,70,255),(80,130,200,255),(230,200,90,255),(120,170,110,255))[i%4],outline=OUT) for i in range(6)]),25*T+1,4*T,solid=None)
 for k,dd_ in BDOORS.items():
     badd('door_'+k[2:],DOORIMG,dd_['x']*T+1,dd_['y']*T+(32-DOORIMG.height),solid=[dd_['x']*T,(dd_['y']+1)*T,T,T],layer='door',door=k,interact='bs_door')
+badd('tread_door',Image.new('RGBA',(8,26),(0,0,0,0)),24*T+1,8*T+2,solid=None,flat=True,interact='bs_tread')   # through here: the storage room and the treadmill
 badd('stairsUp',Image.new('RGBA',(30,10),(0,0,0,0)),14*T+1,5*T,solid=None,flat=True,interact='bs_stairs')
 b_solid=[[1 if bg[y,x] in '#f ' else 0 for x in range(BW)] for y in range(BH)]
 for x in (14,15): b_solid[4][x]=1

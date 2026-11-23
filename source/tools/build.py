@@ -247,7 +247,17 @@ put('table',None,29,7,dx=-7,dy=2,img=tb,interact='table',fh=tb.height-10)
 put('chairL1','chair_l',27,5,dx=10,dy=2,fh=8); put('chairL2','chair_l',27,6,dx=10,dy=6,fh=8)
 put('chairR1','chair_r',30,5,dx=8,dy=2,fh=8); put('chairR2','chair_r',30,6,dx=8,dy=6,fh=8)
 wick=blk(12,30,(206,170,120,255),(170,130,86,255),fh=4,lines=lambda dd:[dd.line([(1,6+i*8),(10,6+i*8)],fill=(140,104,66,255)) for i in range(3)])
-put('wicker',None,31,9,dx=3,img=wick,interact='shelves',fh=28)
+# Vinny's raised double feeder (Neater Feeder style) against the east wall: dark grey tray on legs, tall back wall against the wall,
+# two stainless bowls one above the other (water north, food south). What is in the bowls is drawn at run time.
+def _feeder():
+    im=Image.new('RGBA',(13,30),(0,0,0,0)); d=ImageDraw.Draw(im); OUTC=(28,26,34,255)
+    d.rounded_rectangle([0,0,12,29],radius=3,fill=(66,66,72,255),outline=OUTC)           # spill tray / base
+    d.rectangle([8,1,11,28],fill=(46,46,52,255))                                       # high back wall against the house wall
+    d.rectangle([1,1,10,3],fill=(52,52,58,255)); d.rectangle([1,26,10,28],fill=(52,52,58,255))   # side walls
+    d.line([(8,2),(8,27)],fill=(90,90,98,255)); d.point((10,14),fill=(150,150,160,255)); d.point((10,15),fill=(150,150,160,255))  # rim highlight, little logo
+    for cy in (9,20): d.ellipse([1,cy-5,8,cy+4],fill=(180,184,192,255),outline=(110,114,122,255)); d.ellipse([3,cy-3,6,cy+2],fill=(140,144,152,255))
+    return im
+put('wicker',None,31,9,dx=3,img=_feeder(),interact='dogbowl',fh=28)
 # ================= Living room =================
 F35={'A':'010101111101101','C':'011100100100011','D':'110101101101110','E':'111100110100111','G':'011100101101011','H':'101101111101101','I':'111010010010111','K':'101101110101101','N':'110101101101101','O':'010101101101010','P':'110101110100100','R':'110101110101101','S':'011100010001110','U':'101101101101111','V':'101101101101010',' ':'000000000000000'}
 def ptext(q,x,y,s_,col):
@@ -524,7 +534,8 @@ pk_base,PKOBJ,pk_solid,PKW,PKH=PK.make()
 exec(open('/home/claude/game/tools/bsmt_part.py').read())
 exec(open('/home/claude/game/tools/yard_part.py').read())
 CHAR['ryan']=adult((58,110,168),(106,106,88),extra=[ramp(load('Hairstyles/16x16/Hairstyle_01_01.png',3),lambda r,g,b:(r+g+b>60),[(64,42,26),(90,58,34),(120,82,48)])],shoes=(58,58,68))
-CHAR['lizz']=adult((176,84,104),(58,62,84),extra=[ramp(load('Hairstyles/16x16/Hairstyle_05_01.png',3),lambda r,g,b:(r+g+b>60),[(150,104,50),(196,150,84),(228,192,124)])],shoes=(236,232,224))
+# Lizz (from Nick's photos): straight blonde hair to the shoulders, side part; burgundy long-sleeve top, dark jeans
+CHAR['lizz']=adult((128,40,56),(44,52,80),extra=[ramp(load('Hairstyles/16x16/Hairstyle_04_01.png',3),lambda r,g,b:(r+g+b>60),[(178,140,72),(224,192,116),(246,226,164)])],shoes=(236,232,224))
 # ---------- atlas ----------
 items=[(o['id'],o['img']) for o in OBJ+PKOBJ+BOBJ+YOBJ]+[('CH_'+k,v) for k,v in CHAR.items()]
 AW=1200; x=y=0; rowh=0; place={}
