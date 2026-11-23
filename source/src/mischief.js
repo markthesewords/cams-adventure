@@ -35,7 +35,7 @@ function msDone(id){ const f=msFlags(); if(f[id]) return; f[id]=true; save(); co
 function msFreeNear(x,y,avoid){ let best=null,bd=1e9; for(let r=0;r<=40;r+=8) for(let a=0;a<8;a++){ const px=x+Math.cos(a*Math.PI/4)*r, py=y+Math.sin(a*Math.PI/4)*r; if(!boxFree(px,py,5,4)) continue; if(avoid&&Math.hypot(px-avoid[0],py-avoid[1])<14) continue; const d=Math.hypot(px-x,py-y); if(d<bd){ bd=d; best=[px,py]; } if(r===0) break; } return best||[x,y]; }
 function msWho(pref){ const a=NPC[pref], b=NPC[pref==='grace'?'nick':'grace']; for(const e of [a,b]) if(e&&e.visible&&!e.away&&S.doorHelper!==e) return e; return null; }
 function msFaceTo(e,x,y){ const dx=x-e.x, dy=y-e.y; e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'); }
-async function msCome(e,x,y,sp){ claim(e); const p=msFreeNear(x,y,[P.x,P.y]); await walk(e,[p],sp||84); msFaceTo(e,P.x,P.y); }
+async function msCome(e,x,y,sp){ claim(e); const p=msFreeNear(x,y,[P.x,P.y]); await walk(e,[p],(sp||84)*1.4); msFaceTo(e,P.x,P.y); }
 async function msCarry(e,x,y){ msFaceTo(e,P.x,P.y); P.carry=e; P.lift=9; P.zBias=3; bubble(P,'Up!',800); blip(500,0.06,0.04,'triangle'); await wait(400);
   const p=msFreeNear(x,y); await walk(e,[p],58); P.carry=null; P.lift=0; P.zBias=0; const q=msFreeNear(e.x,e.y+10,[e.x,e.y]); P.x=q[0]; P.y=q[1]; P.dir='down'; msFaceTo(e,P.x,P.y); blip(300,0.05,0.04,'triangle'); }
 function msName(e){ return e===NPC.nick?'Dad':'Mom'; }

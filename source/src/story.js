@@ -202,6 +202,10 @@ function afterHelp(e){ if(S.chapter===2&&!S.flags.ch2done){ navTo(e,e===NPC.nick
 const CH={};
 // ----- Chapter 1: 5:30 AM -----
 CH[1]={ _nothing: async()=>crib1(), crib: async()=>crib1() };
+// Monkey in Cam's arms: held at his chest while standing, tucked against him while he lies down
+function monkeyHeldExtra(){ return {monkey:true, get sortY(){ return P.y+(P.zBias||0)+0.6; }, draw(ox,oy){ const f=S.flags.monkeyHeld; if(!f||!P.visible) return; const o=OBJ.monkey;
+  if(f==='lying'||P.lying){ ctx.save(); ctx.translate(Math.round(P.x-ox-1),Math.round(P.y-oy-7)); ctx.rotate(-0.25); ctx.drawImage(IMG.atlas,o.sx,o.sy,o.w,o.h,-5,-6,o.w,o.h); ctx.restore(); }
+  else { const s=P.dir==='left'?-5:P.dir==='right'?5:0; ctx.drawImage(IMG.atlas,o.sx,o.sy,o.w,o.h,Math.round(P.x-ox-5+s),Math.round(P.y-oy-12-(P.lift||0)),o.w,o.h); } } }; }
 async function crib1(){
   if(S.flags.stage===0){
     S.flags.stage=1;
@@ -215,10 +219,12 @@ async function crib1(){
     S.flags.stage=2;
   } else if(S.flags.stage===2){
     S.flags.stage=3; setGoal('');
-    give('monkey'); await wait(500);
-    bubble(P,'Monkey.',1200); await wait(1000);
-    await say('','Cam grabs Monkey by the ear, flops over, and listens to the shhhhhhh.');
-    P.lying=true;
+    // he actually goes and gets him: toddle over, grab him by the ear, flop down with him
+    const m=OBJ.monkey, mx=m.x+m.w/2, my=m.y+m.h;
+    bubble(P,'Monkey!',1100); await walk(P,[[Math.max(CRIB_BOUNDS[0],mx+12),Math.min(CRIB_BOUNDS[3],my+4)]],26); P.dir='left'; await wait(350);
+    blip(620,0.05,0.04,'triangle'); hidden.add('monkey'); S.flags.monkeyHeld=true; give('monkey'); await wait(500);
+    bubble(P,'Monkey.',1100); await wait(900);
+    P.dir='down'; await hop(P,1); P.lying=true; blip(260,0.08,0.04,'triangle'); S.flags.monkeyHeld='lying'; await wait(1500);
     S.fadeText='Zzz...'; await fadeTo(1,2200); await wait(1200);
     S.flags.ch1done=true; S.chapter=2; save(); S.fadeText=null;
     chapter2();   // not awaited: this handler's lock is released by runHandler
@@ -227,6 +233,7 @@ async function crib1(){
 async function chapter1(){
   S.chapter=1; S.light='night'; S.clock='5:30 AM'; S.goal=''; S.flags.stage=-1;
   S.glows=[[tx(5)+8,ty(2),56,0.5,'rgba(160,180,255,0.08)']];
+  hidden.delete('monkey'); S.flags.monkeyHeld=false; S.extra=(S.extra||[]).filter(e=>!e.monkey); S.extra.push(monkeyHeldExtra());
   for(const k in NPC) NPC[k].visible=false;
   P.sheet='cam_pj'; [P.x,P.y]=CRIB; P.dir='down'; P.visible=true; cribFront(true);
   S.bounds=CRIB_BOUNDS; S.noCollide=true; S.noFall=true; doors.cam=false;
@@ -300,10 +307,10 @@ async function chapter2(){
   await say('Mom','Good morning, sunshine! Did you and Monkey sleep okay?');
   bubble(P,'Hi!',1100); await wait(900);
   await say('Mom','Let\'s get that diaper changed. Upsy-daisy.');
-  cribFront(false); g.zBias=0; P.carry=g; P.lift=9; P.zBias=3; bubble(P,'Up!',900); blip(500,0.06,0.04,'triangle'); await wait(500);
+  S.flags.monkeyHeld=false; hidden.delete('monkey'); cribFront(false); g.zBias=0; P.carry=g; P.lift=9; P.zBias=3; bubble(P,'Up!',900); blip(500,0.06,0.04,'triangle'); await wait(500);
   await walk(g,[[tx(4)+4,ty(6)],[tx(4)+4,ty(7)+2]],40); g.dir='down'; await wait(400);
   await fadeTo(1,500); P.carry=null; P.lift=0; P.zBias=0;
-  S.fadeText='Fresh diaper. Fresh clothes.'; S.fadeSub='(There was some protest.)'; await wait(1900); S.fadeText=null; S.fadeSub=null;
+  S.fadeText='Fresh diaper. Fresh clothes.'; S.fadeSub='(There was some protest.)'; await wait(1900); S.fadeText=null; S.fadeSub=null; S.flags.amMusic=true;
   cribFront(false); P.sheet=camSheet(); P.x=tx(4); P.y=ty(7); P.dir='down'; S.bounds=null; S.noCollide=false;
   g.x=tx(5)+8; g.y=ty(7)-2; g.dir='left';
   S.snapCam=true; await fadeTo(0,600);

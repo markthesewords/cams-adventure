@@ -145,7 +145,7 @@ async function dinnerCall(){ const g=NPC.grace, e=NPC.emory; yAdult(g); claim(e)
 async function poopScene(p){ const g=NPC.grace; p.gone=true; blip(140,0.15,0.06,'sawtooth'); buzz(40); P.dir='down'; bubble(P,'Uh oh...',1200); await wait(1100);
   const D=DATA_YARD.objs.find(o=>o.id==='y_slider'); hidden.add('y_slider'); hidden.delete('y_sliderOpen');
   if(g.visible) yAdult(g); else { g.visible=true; g.x=D.x+D.w/2; g.y=D.y+4; } g.path=null; g.follow=false; g.ghost=true; g.dir='up'; S.camFocus={x:(P.x+g.x)/2,y:Math.min(g.y,P.y+130)};
-  await walk(g,[[P.x+12,P.y+6]],92); g.ghost=false; S.camFocus=null; g.dir=faceTo(g,P); P.dir=faceTo(P,g);
+  await walk(g,[[P.x+12,P.y+6]],129); g.ghost=false; S.camFocus=null; g.dir=faceTo(g,P); P.dir=faceTo(P,g);
   await say('Mom','Oh no! Yuck my man!');
   bubble(g,'*shoes off*',1100); blip(400,0.05,0.04,'triangle'); await wait(1100);
   for(let i=0;i<3;i++){ bubble(g,'*scrub scrub*',600); blip(900+i*40,0.04,0.025,'triangle'); await wait(520); }
@@ -180,7 +180,7 @@ CH[6]={
     if(c===1){ const n=NPC.nick, D=DATA_YARD.objs.find(q=>q.id==='y_slider'), px=P.x;
       for(let i=0;i<10;i++){ P.x=px+(i%2?2:-2); S.shake=0.12; blip(160+(i%3)*30,0.06,0.05,'sawtooth'); if(i===2) bubble(P,'Hehehe!',900); await wait(110); } P.x=px;
       if(n.visible){ yAdult(n); } else { hidden.add('y_slider'); hidden.delete('y_sliderOpen'); n.visible=true; n.x=D.x+D.w/2; n.y=D.y+4; } n.path=null; S.camFocus={x:(P.x+n.x)/2,y:(P.y+n.y)/2-20};
-      await walk(n,[[n.x-20,n.y-20]],60); n.dir=faceTo(n,P);
+      await walk(n,[[n.x-20,n.y-20]],84); n.dir=faceTo(n,P);
       await say('Dad','Hey dude! Be careful!');
       bubble(P,'Hahahaha!',1300); for(let i=0;i<3;i++){ blip(700+i*90,0.05,0.04,'triangle'); await wait(180); } await wait(600);
       bubble(n,'*shakes head*',1000); await wait(700); S.camFocus=null; if(n.chair) ySit(n); else walk(n,[[D.x+D.w/2,D.y+4]],50).then(()=>{ n.visible=false; }); }

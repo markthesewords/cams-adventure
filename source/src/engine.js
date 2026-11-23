@@ -469,10 +469,39 @@ const LIGHTS={
   dawn:{tint:'rgba(40,40,90,0.45)',glows:[]},
   day:{tint:null},
 };
+// ---- sunlight through the windows, by the clock ----
+// The house faces west (front door): on the map, top = east (backyard, slider, kitchen and Cam's windows), bottom = west (bay, bedroom,
+// office windows, front door), left = north, right = south. Morning sun comes in the top windows and slants down the floor;
+// late-afternoon sun comes in the bottom windows, low and golden, reaching far into the rooms.
+function clockHours(){ const m=(S.clock||'').match(/(\d+):(\d+)\s*(AM|PM)/i); if(!m) return 12; let h=+m[1]%12+(+m[2])/60; if(/PM/i.test(m[3])) h+=12; return h; }
+const SUN_E=[[5*16+4,46,16],[11*16-2,46,14],[19*16+4,46,16],[20*16+12,46,16],[25*16-1,46,30]];        // top (east) windows: x, sill y, width
+const SUN_W=[[3*16+3,402,40],[11*16+3,402,40],[21*16+3,402,105],[18*16+1,402,13]];                       // bottom (west) windows and the front door
+function smoothstep(a,b,x){ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }
+function drawSun(ox,oy){
+  const target=clockHours(); if(S.sunH==null||Math.abs(S.sunH-target)>6) S.sunH=target; S.sunH+=(target-S.sunH)*0.02; const h=S.sunH;
+  const house=!S.map||S.map==='house';
+  // whole-room wash: pale warm morning, neutral midday, amber late afternoon, blue dusk
+  const am=smoothstep(6.5,8,h)*(1-smoothstep(10,12,h)), pm=smoothstep(14,17.5,h)*(1-smoothstep(19.3,20.5,h)), dusk=smoothstep(19,20.5,h);
+  ctx.fillStyle=`rgba(255,232,196,${0.03+0.04*am})`; ctx.fillRect(0,0,VW,VH);
+  if(pm>0){ ctx.fillStyle=`rgba(255,176,96,${0.09*pm})`; ctx.fillRect(0,0,VW,VH); }
+  if(dusk>0){ ctx.fillStyle=`rgba(40,48,110,${0.28*dusk})`; ctx.fillRect(0,0,VW,VH); }
+  if(!house) return;
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  const beam=(x,y,w,dx,dy,len,col,a)=>{ if(a<=0.004) return; const X=x-ox, Y=y-oy, ex=dx*len, ey=dy*len;
+    if(X+w<-len&&X+ex<-40||X>VW+len||Math.max(Y,Y+ey)<-10||Math.min(Y,Y+ey)>VH+10) return;
+    const g=ctx.createLinearGradient(X,Y,X+ex,Y+ey); g.addColorStop(0,`rgba(${col},${a})`); g.addColorStop(0.7,`rgba(${col},${a*0.45})`); g.addColorStop(1,`rgba(${col},0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(X,Y); ctx.lineTo(X+w,Y); ctx.lineTo(X+w+ex*1.08,Y+ey); ctx.lineTo(X+ex*0.92,Y+ey); ctx.closePath(); ctx.fill(); };
+  // morning: from the east-southeast, travelling west-northwest = down and a little left on the map
+  const ea=0.16*smoothstep(6.6,7.6,h)*(1-smoothstep(9.5,11.8,h)); const elen=46+30*(1-smoothstep(7,11,h));
+  for(const [x,y,w] of SUN_E) beam(x,y,w,-0.42,1,elen,'255,226,170',ea);
+  // afternoon into evening: from the west-southwest, low and golden = up and a little left, longer as the sun drops
+  const wa=0.2*smoothstep(13.5,16.5,h)*(1-smoothstep(19.2,20.3,h)); const wlen=40+90*smoothstep(14,18.5,h); const wc=h<16.5?'255,214,150':'255,170,90';
+  for(const [x,y,w] of SUN_W) beam(x,y,w,-0.34,-1,wlen,wc,wa);
+  ctx.restore();
+}
 const lc=document.createElement('canvas'); lc.width=VW; lc.height=VH; const lx=lc.getContext('2d');
 function drawLight(ox,oy){
-  const L=LIGHTS[S.light]; if(!L||!L.tint){ if(S.light==='day'){ // soft warm morning wash + window shafts
-      ctx.fillStyle='rgba(255,226,180,0.06)'; ctx.fillRect(0,0,VW,VH); } return; }
+  const L=LIGHTS[S.light]; if(!L||!L.tint){ if(S.light==='day') drawSun(ox,oy); return; }
   lx.globalCompositeOperation='source-over'; lx.clearRect(0,0,VW,VH); lx.fillStyle=L.tint; lx.fillRect(0,0,VW,VH);
   lx.globalCompositeOperation='destination-out';
   for(const g of (S.glows||[])){ const x=g[0]-ox, y=g[1]-oy, r=g[2]; const gr=lx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,`rgba(0,0,0,${g[3]||0.9})`); gr.addColorStop(1,'rgba(0,0,0,0)'); lx.fillStyle=gr; lx.fillRect(x-r,y-r,r*2,r*2); }
